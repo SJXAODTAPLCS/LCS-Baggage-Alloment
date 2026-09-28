@@ -160,10 +160,39 @@
   .report-footer{ font-family:'Microsoft JhengHei', var(--sans); font-size:12px; color:#111; background:#fff; padding:10px 4px; white-space:pre-line; border:1px solid #333; margin-top:-1px; }
   #exportPreviewArea{ background:#fff; padding:14px; border-radius:4px; }
 
+  #fakPrintArea{ display:none; }
+  /* 航材櫃 FAK 獨立頁面 */
+  .fak-sec{ padding:4px 0 22px; }
+  .fak-sec + .fak-sec{ border-top:1px solid var(--border); padding-top:20px; }
+  .fak-sec-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:14px; }
+  .fak-num{ flex-shrink:0; width:26px; height:26px; border-radius:50%; background:var(--cyan); color:#0E1526; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .fak-sec-title{ font-size:16px; font-weight:700; color:var(--text); line-height:1.4; }
+  .fak-sec-sub{ font-size:12.5px; color:var(--text-dim); margin-top:2px; line-height:1.5; }
+  .fak-empty{ font-size:13px; color:var(--text-dim); padding:14px 16px; border:1px dashed var(--border); border-radius:6px; background:var(--panel-2); }
+  .fak-print-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .fak-print-info{ font-size:13px; color:var(--text-dim); }
+  .fak-preview-wrap{ margin-top:14px; overflow-x:auto; background:#fff; border:1px solid var(--border); border-radius:6px; padding:14px 0 18px; }
+  #fakSheetPreview{ width:760px; margin:0 auto; }
+  #fakSheetPreview table th, #fakSheetPreview table td{ position:static !important; left:auto !important; top:auto !important; z-index:auto !important; }
+  #fakSheetPreview table tbody td, #fakSheetPreview table tbody tr:hover td{ background:#fff !important; }
+  #fakSheetPreview table{ margin-top:0; }
+  #fakSheetPreview table th{ color:#111 !important; font-family:inherit !important; }
+  /* FAK確認表不能沿用畫面上表格的「凍結首欄／凍結表頭」(position:sticky) 設定：
+     列印成PDF時，sticky 的格子會被放到另一個圖層，Adobe Reader 開啟時會蓋掉旁邊的格線，
+     造成「機型」欄與表頭沒有框線、班次欄線條錯位（rowspan 之後的列，班次格剛好變成第一格也會被凍結） */
+  #fakPrintArea table th, #fakPrintArea table td{ position:static !important; left:auto !important; top:auto !important; z-index:auto !important; }
+  #fakPrintArea table tbody td, #fakPrintArea table tbody tr:hover td{ background:#fff !important; }
+  #fakPrintArea table{ margin-top:0; }
+  #fakPrintArea table th{ color:#111 !important; font-family:inherit !important; }
   @media print{
     body *{ visibility:hidden; }
     #exportPreviewArea, #exportPreviewArea *{ visibility:visible; }
     #exportPreviewArea{ position:absolute; left:0; top:0; width:100%; padding:0; }
+    /* 列印FAK確認表時（body 會暫時加上 printing-fak）：改成只顯示FAK確認表，把匯出預覽藏起來 */
+    body.printing-fak > *:not(#fakPrintArea){ display:none !important; }
+    body.printing-fak{ background:#fff !important; padding:0 !important; margin:0 !important; min-height:0 !important; }
+    body.printing-fak #fakPrintArea{ display:block; position:static; width:100%; }
+    body.printing-fak #fakPrintArea, body.printing-fak #fakPrintArea *{ visibility:visible; }
   }
 
   /* UI text editor modal */
@@ -198,9 +227,13 @@
   <nav class="sidebar">
     <div class="nav-group">
       <div class="nav-group-title" data-tkey="nav_group1_title">隔日打櫃計畫</div>
-      <div class="nav-item" id="pill1" data-tkey="nav_pill1">航班人數／FAK 資料上傳</div>
+      <div class="nav-item" id="pill1" data-tkey="nav_pill1">航班人數資料上傳</div>
       <div class="nav-item" id="pill2" data-tkey="nav_pill2">打櫃預估總覽</div>
       <div class="nav-item" id="pill3" data-tkey="nav_pill3">匯出打櫃計畫表</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title" data-tkey="nav_group2_title">航材櫃 FAK</div>
+      <div class="nav-item" id="pill4" data-tkey="nav_pill4">FAK 排班／確認表</div>
     </div>
   </nav>
   <div class="main-content">
@@ -254,10 +287,30 @@
       </div>
       <div class="transfer-note" data-tkey="note_quick_grid">只要填「班號」就可以送出；頭等/商務/豪經/經濟/轉機人數可以留空，留空的話②畫面會先帶入歷史平均值，之後仍可以在②表格裡修改。</div>
     </div>
+  </div>
 
-    <div style="margin-top:22px; border-top:1px solid var(--border); padding-top:16px;">
-      <label style="display:block; margin-bottom:10px;" data-tkey="label_fak_section">航材櫃(FAK)排班更新（每週依航材櫃輪值表更新一次，系統會自動配對往返航班）</label>
+  <!-- ========== FAK：航材櫃（獨立功能） ========== -->
+  <div class="panel hidden" id="stepFak">
+    <section class="fak-sec">
+      <div class="fak-sec-head"><span class="fak-num">1</span><div>
+        <div class="fak-sec-title">列印 FAK 確認表</div>
+        <div class="fak-sec-sub">(OIC 請協助印出隔天FAK表)</div>
+      </div></div>
+      <div id="fakPrintEmpty" class="fak-empty">目前還沒有存入任何 FAK 排班，請先在下方「② 上傳 FAK 排班表」。</div>
+      <div id="fakPrintRow" class="hidden fak-print-row">
+        <label for="fakPrintDate" style="margin:0;">日期</label>
+        <input type="date" id="fakPrintDate" style="width:auto;">
+        <button type="button" id="printFakSheetBtn" class="primary">🖨 列印FAK確認表</button>
+        <span id="fakPrintInfo" class="fak-print-info"></span>
+      </div>
+      <div id="fakSheetPreviewWrap" class="hidden fak-preview-wrap"><div id="fakSheetPreview"></div></div>
+    </section>
 
+    <section class="fak-sec">
+      <div class="fak-sec-head"><span class="fak-num">2</span><div>
+        <div class="fak-sec-title">上傳 FAK 排班表</div>
+        <div class="fak-sec-sub" data-tkey="label_fak_section">航材櫃(FAK)排班更新（每週依航材櫃輪值表更新一次，系統會自動配對往返航班）</div>
+      </div></div>
       <div style="text-align:center; padding:22px 16px; border:2px dashed var(--cyan); border-radius:8px; background:color-mix(in srgb, var(--cyan) 8%, var(--panel-2));">
         <label id="fakUploadBigBtn" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-size:16px; font-weight:700; padding:14px 32px; border-radius:6px; background:var(--cyan); color:#0E1526;">
           <span data-tkey="label_fak_excel_upload">📄 上傳Excel/CSV檔</span>
@@ -265,7 +318,6 @@
         </label>
         <div id="fakUploadStatus" style="margin-top:10px; font-size:13px;"></div>
       </div>
-
       <div id="fakPreviewWrap" class="hidden" style="margin-top:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span id="fakPreviewSummary" style="font-size:13px; color:var(--text-dim);"></span>
         <div style="display:flex; gap:8px; margin-left:auto;">
@@ -278,10 +330,14 @@
         <button type="button" id="fakConfirmYesBtn" class="secondary" style="border-color:var(--warn); color:var(--warn);">確定清除</button>
         <button type="button" id="fakConfirmNoBtn" class="secondary">取消</button>
       </div>
+    </section>
 
-      <div style="margin-top:20px;">
-        <label style="display:block; margin-bottom:10px;" data-tkey="label_fak_grid">或者：人工輸入（依航材櫃輪值表逐列填入，機型/櫃號/重量僅供對照，系統只會讀取日期與航班）</label>
-        <div class="table-scroll">
+    <section class="fak-sec">
+      <div class="fak-sec-head"><span class="fak-num">3</span><div>
+        <div class="fak-sec-title">手動輸入／修改</div>
+        <div class="fak-sec-sub" data-tkey="label_fak_grid">或者：人工輸入（依航材櫃輪值表逐列填入，機型/櫃號/重量僅供對照，系統只會讀取日期與航班）</div>
+      </div></div>
+      <div class="table-scroll">
         <table id="fakEntryTable" style="min-width:640px;">
           <thead><tr>
             <th data-tkey="th_fe_date">日期</th>
@@ -300,8 +356,7 @@
           <button class="primary" id="submitFakEntryBtn" type="button" data-tkey="btn_submit_fak_entry">加入FAK排班 →</button>
           <span class="transfer-note" id="fakStatusText" style="margin:0; align-self:center;"></span>
         </div>
-      </div>
-    </div>
+    </section>
   </div>
 
   <!-- ========== STEP 2: CALC ========== -->
@@ -430,6 +485,7 @@
   </div>
 </div>
 
+<div id="fakPrintArea"></div>
 <textarea id="copyArea"></textarea>
 <div class="toast" id="toast">已複製到剪貼簿</div>
 
@@ -504,16 +560,197 @@ function renderFakPreview(){
   const wrap = document.getElementById('fakPreviewWrap');
   const summary = document.getElementById('fakPreviewSummary');
   const dates = Object.keys(fakSchedule).filter(d => Object.keys(fakSchedule[d] || {}).length > 0).sort();
-  if(dates.length === 0){ wrap.classList.add('hidden'); return; }
+  const printRow = document.getElementById('fakPrintRow');
+  const emptyEl = document.getElementById('fakPrintEmpty');
+  if(dates.length === 0){ wrap.classList.add('hidden'); if(printRow) printRow.classList.add('hidden'); if(emptyEl) emptyEl.classList.remove('hidden'); renderFakSheetPreview(); return; }
   wrap.classList.remove('hidden');
+  if(printRow) printRow.classList.remove('hidden');
+  if(emptyEl) emptyEl.classList.add('hidden');
   const todayStr = todayISO();
   const upcoming = dates.filter(d => d >= todayStr);
+  const pd = document.getElementById('fakPrintDate');
+  if(pd && !pd.value) pd.value = fakSchedule[dateInput.value] ? dateInput.value : (upcoming[0] || dates[dates.length - 1]);
   const totalFlights = dates.reduce((s2,d) => s2 + Object.keys(fakSchedule[d]).length, 0);
   if(upcoming.length){
     summary.textContent = `已存入 ${upcoming.length} 個未來日期（${upcoming[0]} ~ ${upcoming[upcoming.length-1]}）、共 ${totalFlights} 筆FAK紀錄`;
   } else {
     summary.textContent = `已存入 ${dates.length} 個日期（都已過去）、共 ${totalFlights} 筆FAK紀錄`;
   }
+  renderFakSheetPreview();
+}
+
+// 在畫面上直接預覽所選日期的FAK確認表（和列印出來的內容相同）
+function renderFakSheetPreview(){
+  const pw = document.getElementById('fakSheetPreviewWrap');
+  const pv = document.getElementById('fakSheetPreview');
+  const info = document.getElementById('fakPrintInfo');
+  const pd = document.getElementById('fakPrintDate');
+  if(!pw || !pv) return;
+  const d = pd ? pd.value : '';
+  const html = d ? buildFakSheetHtml(d) : null;
+  if(!html){
+    pw.classList.add('hidden'); pv.innerHTML = '';
+    if(info) info.textContent = d ? (d + ' 沒有FAK資料') : '';
+    return;
+  }
+  pv.innerHTML = html.replace('id="fakSheetTitle"', '');
+  pw.classList.remove('hidden');
+  if(info){
+    const n = (fakDetail[d] || []).filter(e => e && e.container && e.container !== '—').length;
+    info.textContent = n ? `這天共 ${n} 個航材櫃，下方為列印預覽` : '下方為列印預覽';
+  }
+}
+
+function escHtml(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// 把表格儲存格裡的班次（例如「JX308, JX316」）拆成一段一段的航班：每個班配上它的回程班，
+// 去程（從TPE/RMQ出發的那班）在前、回程在後，各自獨立一列，因為去程和回程可能是不同的人負責，要各自簽名。
+// 回程班用跟FAK自動配對相同的規則(findReturnFlight)；如果回程班本來就寫在同一格裡，不會重複列出。
+const FAK_BASE_STATIONS = ['TPE','RMQ'];
+function isBaseDeparture(fn){
+  const f = flights[fn];
+  if(!f) return false;
+  const origin = f.origin || String(f.route || '').split('-')[0];
+  return FAK_BASE_STATIONS.includes(origin);
+}
+function fakLegsFromCell(raw){
+  const nums = [];
+  String(raw || '').replace(/JX\s*0*(\d+)/gi, (m, n) => { nums.push(n); return m; });
+  if(nums.length === 0) return [{fn: String(raw || ''), dir: '', plain: true}];
+  const legs = []; const shown = new Set();
+  nums.forEach(n => {
+    if(shown.has(n)) return;
+    const ret = findReturnFlight(n);
+    shown.add(n);
+    if(!ret){ legs.push({fn: 'JX' + n, dir: flights[n] ? (isBaseDeparture(n) ? '去程' : '回程') : ''}); return; } // 系統查無這個班號時，不亂猜去程/回程
+    shown.add(ret);
+    // 一般是「列在表格裡的班」是去程；萬一列的是回來的班、配對到的才是從基地出發的，就把順序對調
+    const swap = isBaseDeparture(ret) && !isBaseDeparture(n);
+    const first = swap ? ret : n, second = swap ? n : ret;
+    legs.push({fn: 'JX' + first, dir: '去程'});
+    legs.push({fn: 'JX' + second, dir: '回程'});
+  });
+  return legs;
+}
+
+// 產生某一天的「FAK確認表」（給同仁逐項確認、簽名用）。沒有這天的資料就回傳 null
+function buildFakSheetHtml(dateStr){
+  const sched = fakSchedule[dateStr];
+  if(!sched || Object.keys(sched).length === 0) return null;
+  const wd = ['日','一','二','三','四','五','六'][new Date(dateStr + 'T00:00:00').getDay()];
+  const logoEl = document.querySelector('.brand-logo');
+  const logoSrc = logoEl ? logoEl.src : '';
+  // 格線改用「每格只畫右框＋下框、表格本身補左框、表頭補上框」的方式（border-collapse:separate）。
+  // 原本 collapse 模式搭配 rowspan，在 Adobe Reader 裡會出現整欄格線消失、線條錯位的情況
+  const cell = 'border:0; border-right:1px solid #111; border-bottom:1px solid #111; padding:4px 7px; font-size:13px; vertical-align:middle;';
+  const head = 'border:0; border-top:1px solid #111; border-right:1px solid #111; border-bottom:1px solid #111; padding:5px 7px; font-size:13px; background:#eee; font-weight:700; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact;';
+  const detail = (fakDetail[dateStr] || []).filter(e => e && (e.container && e.container !== '—'));
+  let bodyRows = '', headRow = '', colW = [];
+  if(detail.length){
+    colW = [60, 172, 96, 76, 70, 150, 94]; // 機型、櫃號、重量、班次、已確認、簽名、備註（合計718px）
+    headRow = ['機型','櫃號','重量(KG)','班次','已確認','簽名','備註'].map(h => `<th style="${head}">${h}</th>`).join('');
+    detail.forEach((e, i) => {
+      const legs = fakLegsFromCell(e.flights);
+      let group = '';
+      legs.forEach((leg, k) => {
+        group += `<tr style="height:28px;">`;
+        if(k === 0){
+          const rs = legs.length;
+          group += `<td rowspan="${rs}" style="${cell} text-align:center;">${escHtml(e.acType && e.acType !== '—' ? normAcName(e.acType) : '')}</td>`
+            + `<td rowspan="${rs}" style="${cell} white-space:pre-line;">${escHtml(e.container)}</td>`
+            + `<td rowspan="${rs}" style="${cell} text-align:center;">${escHtml(e.weight && e.weight !== '—' ? e.weight : '')}</td>`;
+        }
+        group += `<td style="${cell} text-align:center; white-space:nowrap;">${escHtml(leg.fn)}</td>`
+          + `<td style="${cell} text-align:center; font-size:19px; line-height:1;">☐</td>`
+          + `<td style="${cell} min-width:100px;"></td>`
+          + `<td style="${cell} min-width:60px;"></td></tr>`;
+      });
+      bodyRows += `<tbody style="page-break-inside:avoid;">${group}</tbody>`;
+    });
+  } else {
+    bodyRows = '';
+    // 這天沒有機型／櫃號／重量的細節（例如手動輸入的資料），退回只列班號與櫃數，櫃號留空讓同仁手寫
+    colW = [96, 86, 172, 74, 170, 120]; // 班次、FAK櫃數、櫃號、已確認、簽名、備註（合計718px）
+    headRow = ['班次','FAK櫃數','櫃號（手寫）','已確認','簽名','備註'].map(h => `<th style="${head}">${h}</th>`).join('');
+    const fns = Object.keys(sched).sort((a,b) => (parseInt(a,10)||0) - (parseInt(b,10)||0));
+    fns.forEach((fn, i) => {
+      bodyRows += `<tr style="height:38px; page-break-inside:avoid;">`
+        + `<td style="${cell} text-align:center;">JX${escHtml(fn)}</td>`
+        + `<td style="${cell} text-align:center;">${escHtml(sched[fn])}</td>`
+        + `<td style="${cell} min-width:120px;"></td>`
+        + `<td style="${cell} text-align:center; font-size:20px;">☐</td>`
+        + `<td style="${cell} min-width:90px;"></td>`
+        + `<td style="${cell} min-width:80px;"></td></tr>`;
+    });
+  }
+  return `<div style="font-family:'Microsoft JhengHei','Noto Sans TC',sans-serif; color:#111; padding:11px 0 0 38px; box-sizing:border-box;">`
+    + `<div style="display:flex; align-items:flex-end; gap:16px; border-bottom:1px solid #111; padding-bottom:8px; width:718px; box-sizing:border-box;">`
+    + (logoSrc ? `<img src="${logoSrc}" alt="STARLUX" style="height:42px; width:auto; display:block;">` : '')
+    + `<div id="fakSheetTitle" style="flex:1; text-align:center; font-size:22px; font-weight:700; line-height:1; margin-bottom:-1px;">航材櫃（FAK）裝載確認表</div>`
+    + `<div style="width:130px;"></div></div>`
+    + `<div style="display:flex; justify-content:space-between; align-items:flex-end; margin:12px 0 10px; font-size:15px; line-height:26px; height:26px; width:718px;">`
+    + `<div>日期：<b>${dateStr}（週${wd}）</b></div>`
+    + `<div>印表人（OIC）確認：<span style="display:inline-block; min-width:170px; height:26px; vertical-align:bottom; border-bottom:1px solid #111;"></span></div></div>`
+    + `<table style="width:718px; table-layout:fixed; border-collapse:separate; border-spacing:0; border-left:1px solid #111;"><colgroup>${colW.map(w => `<col style="width:${w}px;">`).join('')}</colgroup><thead><tr style="height:26px;">${headRow}</tr></thead>${detail.length ? bodyRows : '<tbody>' + bodyRows + '</tbody>'}</table>`
+    + `</div>`;
+}
+
+// 把確認表放進列印區、切換成「只印FAK確認表」模式；回傳是否成功（該日期沒資料就不列印）
+function endFakPrintMode(){
+  document.body.classList.remove('printing-fak');
+  const st = document.getElementById('fakPageStyle');
+  if(st) st.remove();
+}
+function prepareFakPrint(dateStr){
+  const html = buildFakSheetHtml(dateStr);
+  if(!html) return false;
+  document.getElementById('fakPrintArea').innerHTML = html;
+  endFakPrintMode();
+  const st = document.createElement('style');
+  st.id = 'fakPageStyle';
+  st.textContent = '@page{ margin: 10mm 0; }';
+  document.head.appendChild(st);
+  fitFakSheetRows();
+  document.body.classList.add('printing-fak');
+  return true;
+}
+
+// 列印區暫時放到畫面外量高度，找出「最大、而且整張表還放得下一頁(A4、上下各留10mm)」的列高，
+// 這樣不管當天有幾個櫃子，表格底部都會落在離紙張下緣約10mm的位置；櫃子太多放不下時就維持最小列高、自然跨頁
+function fitFakSheetRows(){
+  const area = document.getElementById('fakPrintArea');
+  const sheet = area.firstElementChild;
+  if(!sheet) return;
+  const rows = Array.from(sheet.querySelectorAll('tbody tr'));
+  if(rows.length === 0) return;
+  const detailLayout = !!sheet.querySelector('tbody[style*="page-break-inside"]');
+  const MIN_PX = detailLayout ? 28 : 34, MAX_PX = 46;
+  const availPx = 276 * 96 / 25.4; // A4 高297mm − 上下各10mm − 1mm 安全餘裕
+  const saved = area.style.cssText;
+  area.style.cssText = 'display:block; position:absolute; left:-10000px; top:0; width:210mm; visibility:hidden;';
+  const setH = (px) => rows.forEach(tr => { tr.style.height = px + 'px'; });
+  // 列高一律用整數px：先找出放得下的最大整數列高，剩下的零頭再逐列各加1px（由上往下），
+  // 這樣每條橫線都落在整數位置，列印或預覽時粗細才會一致（小數列高會讓線忽粗忽細）
+  const fits = () => sheet.getBoundingClientRect().height <= availPx;
+  let lo = MIN_PX, hi = MAX_PX, best = MIN_PX;
+  while(lo <= hi){
+    const mid = Math.floor((lo + hi) / 2);
+    setH(mid);
+    if(fits()){ best = mid; lo = mid + 1; } else { hi = mid - 1; }
+  }
+  setH(best);
+  for(let i = 0; i < rows.length && best < MAX_PX; i++){
+    rows[i].style.height = (best + 1) + 'px';
+    if(!fits()){ rows[i].style.height = best + 'px'; break; }
+  }
+  area.style.cssText = saved;
+}
+function printFakSheet(dateStr){
+  if(!dateStr){ showToast('請先選擇要列印的日期'); return; }
+  if(!prepareFakPrint(dateStr)){ showToast(dateStr + ' 沒有FAK資料，無法產生確認表'); return; }
+  const cleanup = () => { endFakPrintMode(); window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  window.print();
 }
 
 function saveFakSchedule(){
@@ -664,7 +901,17 @@ function getRouteAcType(route){ const r = route && routes[route]; return r ? (r[
 // 機號 → 機型（依公司機隊對照表）：582xx=A321neo(AKH)、583xx=A330-941(AKE)、585xx=A350-941(AKE)、5855x=A350-1041(AKE)
 const AC_SHORT = {'A321neo':'A321','A330-941':'A339','A350-941':'A359','A350-1041':'A351'};
 const AC_ULD = {'A321neo':'AKH','A330-941':'AKE','A350-941':'AKE','A350-1041':'AKE'};
-function acShort(t){ return AC_SHORT[t] || t || ''; }
+// 機型統一用簡稱顯示：A321、A339(A330)、A359(A350-900)、A351(A350-1000)；上傳檔的分頁名稱、舊資料裡的長名稱都會轉成這個
+function normAcName(t){
+  const x = String(t == null ? '' : t).trim();
+  if(!x) return '';
+  if(/^A321/i.test(x)) return 'A321';
+  if(/^A330/i.test(x) || /^A339/i.test(x)) return 'A339';
+  if(/^A350-?10/i.test(x) || /^A351/i.test(x)) return 'A351';
+  if(/^A350-?9/i.test(x) || /^A359/i.test(x)) return 'A359';
+  return x;
+}
+function acShort(t){ return AC_SHORT[t] || normAcName(t) || ''; }
 function regToAcType(reg){
   const m = String(reg || '').trim().toUpperCase().match(/^B?-?(\d{5})$/);
   if(!m) return null;
@@ -685,12 +932,23 @@ function getRowUldType(row){
 }
 function getContainerCap(row){ return /^A321/i.test(getRowAcType(row)) ? A321_MAX_CONTAINERS : null; }
 // 預設發布打櫃數 = 依航線區域基準 + BS特殊行李櫃數 + 組員行李櫃數；A321 時整體（含BS、組員櫃）不超過上限
+// 頭等艙只要有旅客（即使只有1位）就單獨打一個 BF 櫃
+// 櫃數換算：裝滿的櫃數之外，剩下的件數如果不超過10件，預設放散艙（BULK），不另外多打一櫃
+const BULK_MAX_PCS = 10;
+function ctnWithBulk(bags, fill){
+  if(!(bags > 0) || !(fill > 0)) return 0;
+  const full = Math.floor(bags / fill);
+  return full + ((bags - full * fill) > BULK_MAX_PCS ? 1 : 0);
+}
+function hasFirstPax(calc){ return !!(calc && calc.cabinDetail && Math.round(Number(calc.cabinDetail.first.pax) || 0) >= 1); }
 function getDefaultPublish(calc, row){
   const crew = Number(row.crew) || 0;
   const bsCtn = Number(row.bs) || 0;
+  // BF 專櫃通常只裝少量行李，依件數算出來的櫃數不會反映這一櫃，所以有頭等旅客時另外加 1 櫃
+  const bfExtra = hasFirstPax(calc) ? 1 : 0;
   let base = getPublishContainerCount(calc, row.route);
-  if(calc.cap !== null && calc.cap !== undefined) base = Math.min(base, Math.max(1, calc.cap - crew - bsCtn));
-  return base + crew + bsCtn;
+  if(calc.cap !== null && calc.cap !== undefined) base = Math.min(base, Math.max(1, calc.cap - crew - bsCtn - bfExtra));
+  return base + bfExtra + crew + bsCtn;
 }
 
 // 節日提醒：當天（含隔天凌晨班次的實際日期）落在哪些連假／節日，就列出名稱；沒有就留空
@@ -811,7 +1069,7 @@ document.getElementById('submitQuickEntryBtn').addEventListener('click', () => {
 const fakEntryBody = document.getElementById('fakEntryBody');
 const FAK_FIELDS = [
   {key:'date', type:'date'},
-  {key:'actype', type:'text', placeholder:'例：A330'},
+  {key:'actype', type:'text', placeholder:'例：A339'},
   {key:'flight', type:'text', placeholder:'例：705'},
   {key:'container', type:'text', placeholder:'例：AKE39011'},
   {key:'weight', type:'number', placeholder:'KG'},
@@ -883,7 +1141,7 @@ document.getElementById('submitFakEntryBtn').addEventListener('click', () => {
   const nDates = addFakEntriesFromGrid(entries);
   entries.forEach(e => {
     if(!fakDetail[e.date]) fakDetail[e.date] = [];
-    fakDetail[e.date].push({ acType: e.actype || '—', container: e.container || '—', weight: e.weight || '—', flights: 'JX' + e.flightNo });
+    fakDetail[e.date].push({ acType: normAcName(e.actype) || '—', container: e.container || '—', weight: e.weight || '—', flights: 'JX' + e.flightNo });
     fakUploadedOn[e.date] = realTodayISO();
   });
   const saved = saveFakSchedule();
@@ -926,6 +1184,7 @@ function detectPnlHeaderCols(headerLine, subHeaderLine){
   // BT-O/B 底下如果還有第二行子表頭，列出各個轉出班號（例如 JX10、JX32...），代表這份檔案是
   // 「當天實際各轉出班號的轉機人數」明細，比只有一個總數更準，要另外解析、加總
   let onwardCols = null, onwardEnd = -1;
+  const oalCols = [];
   if(subHeaderLine && btOut >= 0){
     const subCells = subHeaderLine.split(',').map(f => f.trim());
     const map = {};
@@ -934,13 +1193,15 @@ function detectPnlHeaderCols(headerLine, subHeaderLine){
       if(subCells[i] === '') break; // 子表頭到這裡結束（後面通常接 REMARK 那些空白欄）
       const m = subCells[i].match(/^JX0*(\d+)$/i);
       if(m) map[m[1]] = i; // 有寫班號的欄位，記錄下來供拆分BT建議用
-      // 沒寫班號但仍有標籤的欄位（例如「其他」），照樣算進轉機人數總數，只是不拆分到特定轉出班號
+      // 沒寫班號但仍有標籤的欄位（例如「其他」）：代表轉外航（OAL）的旅客，記錄下來；
+      // TPE/RMQ 出發的航班會另外算成 BT-OAL 專櫃，抵台航班則維持只算進轉機人數總數
+      else oalCols.push(i);
     }
     onwardEnd = i - 1;
-    if(Object.keys(map).length > 0) onwardCols = map;
+    if(Object.keys(map).length > 0 || oalCols.length > 0) onwardCols = map;
   }
   if(staff < 0 && btIn < 0 && btOut < 0 && remark < 0) return null; // 不像是有這些新欄位的表頭，當作沒有表頭
-  return { staff, btIn, btOut, remark, onwardCols, onwardEnd };
+  return { staff, btIn, btOut, remark, onwardCols, onwardEnd, oalCols };
 }
 
 function tryParsePnlLine(line, headerCols){
@@ -993,6 +1254,10 @@ function tryParsePnlLine(line, headerCols){
         const v = fields[headerCols.onwardCols[fn]];
         if(/^\d+$/.test(v || '')) onwardPax[fn] = Number(v);
       });
+      let oalSum = 0;
+      (headerCols.oalCols || []).forEach(ci => { const v = fields[ci]; if(/^\d+$/.test(v || '')) oalSum += Number(v); });
+      if(oalSum > 0) onwardPax.OAL = oalSum;
+      if(Object.keys(onwardPax).length === 0) onwardPax = null;
       transferPax = sum;
     } else {
       const inVal = headerCols.btIn >= 0 ? fields[headerCols.btIn] : '';
@@ -1198,8 +1463,8 @@ function computeRow(row){
   }
 
   const predictedBags = cabinBagsTotal; // BS／特殊行李、組員行李都是直接輸入「櫃數」，不併入行李件數，最後另外加在發布打櫃數上
-  const rawSuggested = Math.max(1, Math.ceil(predictedBags / containerFill));
-  const rawConservative = Math.max(rawSuggested, Math.ceil((predictedBags + STD_BUFFER_MULT * stdBags) / containerFill));
+  const rawSuggested = Math.max(1, ctnWithBulk(predictedBags, containerFill));
+  const rawConservative = Math.max(rawSuggested, ctnWithBulk(predictedBags + STD_BUFFER_MULT * stdBags, containerFill));
   const rawAvg = Math.max(rawSuggested, Math.round((rawSuggested + rawConservative) / 2));
   // A321 最多 10 AKH：標準／保守／平均一律不超過上限
   const cap = getContainerCap(row);
@@ -1360,6 +1625,7 @@ function render(){
       if(row.transferFlag === 'sea_arrival') tdRoute.innerHTML += `<span class="flag-badge" title="抵台後常有旅客轉出美加，行李需獨立打專櫃">BT-O/B</span>`;
       if(row.transferFlag === 'sea_departure') tdRoute.innerHTML += `<span class="flag-badge" style="border-color:var(--good); color:var(--good);" title="承接美加轉入東南亞旅客，行李視為當地行李、與一般行李混打，不需專櫃">BT-I/B</span>`;
       if(row.transferFlag === 'us_departure') tdRoute.innerHTML += `<span class="flag-badge" style="border-color:var(--good); color:var(--good);" title="承接東南亞轉入美加旅客，行李視為當地行李、與一般行李混打，不需專櫃">BT-I/B</span>`;
+      if(row.onwardBtPax && row.onwardBtPax.OAL > 0 && isBaseDeparture(row.flightNo)) tdRoute.innerHTML += `<span class="flag-badge" title="預報表「其他」${row.onwardBtPax.OAL}人：抵達後轉外航。依艙等人數占比分攤，經濟艙轉機行李另打 BT-OAL 專櫃；頭等／商務／豪經的轉機行李與該艙等當地行李同櫃">BT-OAL ${row.onwardBtPax.OAL}人</span>`;
     }
     tr.appendChild(tdRoute);
 
@@ -1387,7 +1653,7 @@ function render(){
       opts.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = acShort(t); if(t === curType) o.selected = true; sel.appendChild(o); });
       const regType = regToAcType(row.reg);
       sel.title = row.acType ? ('已手動指定機型（原本判斷為 ' + acShort(autoType) + '）')
-                : (regType ? ('依機號 ' + row.reg + ' 判斷為 ' + regType) : ('尚無機號，先用航線歷史預設機型（' + (routeType || '無資料') + '），填入機號後會自動判斷'));
+                : (regType ? ('依機號 ' + row.reg + ' 判斷為 ' + acShort(regType)) : ('尚無機號，先用航線歷史預設機型（' + (routeType ? acShort(routeType) : '無資料') + '），填入機號後會自動判斷'));
       if(row.acType || (curType && routeType && curType !== routeType)) sel.style.borderColor = 'var(--accent)';
       sel.addEventListener('change', (e) => { row.acType = (e.target.value === autoType) ? null : e.target.value; render(); scheduleSave(); });
       tdAc.appendChild(sel);
@@ -1567,6 +1833,27 @@ function getDailyBtLines(row){
   Object.keys(row.onwardBtPax).forEach(onward => {
     const pax = row.onwardBtPax[onward];
     const bags = pax * bagsPerPax;
+    if(onward === 'OAL'){
+      // 轉外航（預報表「其他」欄）：只有 TPE/RMQ 出發的航班才處理；抵台航班的「其他」維持原本做法（只算進轉機人數總數）。
+      // 比照現場人工算法：預報只有「其他」總人數，依各艙等人數占比（%）分攤到各艙等；
+      // 頭等／商務／豪經的轉機行李與該艙等當地行李同櫃（LOCAL + TRF），只有經濟艙的轉機行李另打 BT-OAL 專櫃（TRF BY）。
+      // 專櫃每櫃件數採該航線該櫃型的平均裝載量（JX32 實際 BT 專櫃約30～40件，與航線平均相近）。
+      if(!isBaseDeparture(row.flightNo) || !(pax > 0)) return;
+      const calc = computeRow(row);
+      if(!calc) return;
+      const cd = calc.cabinDetail;
+      const totPax = CABIN_KEYS.reduce((s2, k) => s2 + (Number(cd[k].pax) || 0), 0);
+      if(!(totPax > 0)) return;
+      const share = Math.min(1, pax / totPax);
+      const yBags = (cd.economy.bags || 0) * share;
+      const fill = calc.containerFill || cap;
+      if(!(yBags > 0)) return;
+      const line = {onward:'OAL', cabin:'economy', share: Math.round(share*1000)/1000, avg_bags: Math.round(yBags*10)/10};
+      const oalCtn = ctnWithBulk(yBags, fill);
+      if(oalCtn === 0) lines.push({type:'oal_bulk', ...line});
+      else lines.push({type:'dedicated', ...line, containers: oalCtn});
+      return;
+    }
     if(bags > cap){
       lines.push({type:'dedicated', onward, avg_bags: Math.round(bags*10)/10, containers: Math.ceil(bags/cap)});
     } else {
@@ -1580,7 +1867,8 @@ function getDailyBtLines(row){
 }
 function formatBtLines(lines){
   return lines.map(l => {
-    if(l.type === 'dedicated') return `BT-JX${l.onward} *${l.containers}`;
+    if(l.type === 'dedicated') return l.onward === 'OAL' ? `BT-OAL *${l.containers} FOR TRF BY` : `BT-JX${l.onward} *${l.containers}`;
+    if(l.type === 'oal_bulk') return 'BT-OAL BULK FOR TRF BY';
     if(l.type === 'mix_ctn') return 'BT-MIX *1';
     if(l.type === 'mix_bulk') return 'BT-MIX BULK';
     return '';
@@ -1609,18 +1897,43 @@ function computeExportRow(row){
   const calc = computeRow(row);
   if(!calc) return null;
   const fill = calc.containerFill || 1;
-  const fcBags = calc.cabinDetail.first.bags + calc.cabinDetail.business.bags;
-  const bf = 0;
-  const bp = fcBags > 0 ? Math.ceil(fcBags / fill) : 0;
-  const bw = calc.cabinDetail.premium.bags > 0 ? Math.ceil(calc.cabinDetail.premium.bags / fill) : 0;
-  let by = calc.cabinDetail.economy.bags > 0 ? Math.ceil(calc.cabinDetail.economy.bags / fill) : 0;
+  const withBf = hasFirstPax(calc);
+  // 有頭等旅客：頭等行李單獨打 BF 櫃；沒有頭等旅客（只有歷史平均帶入的零星數字）時，併入 BP 計算
+  const firstBagsRaw = withBf ? calc.cabinDetail.first.bags : 0;
+  const fcBagsRaw = (withBf ? 0 : calc.cabinDetail.first.bags) + calc.cabinDetail.business.bags;
+  const premiumBagsRaw = calc.cabinDetail.premium.bags;
+  const economyBagsRaw = calc.cabinDetail.economy.bags;
   const btFillOverride = getBtContainerFill(getEffectiveDate(row), row.transferFlag);
   const btFill = btFillOverride || fill;
   const dailyLines = getDailyBtLines(row);
+  const p31BtEntry = DATA.sea_us_bt && DATA.sea_us_bt[row.flightNo];
   const p31Bt = getP31BtContainers(row.flightNo);
   const bt = dailyLines ? countBtContainers(dailyLines)
     : (p31Bt !== null ? p31Bt
     : ((calc.isBtOutbound && calc.transferPax > 0) ? Math.max(1, Math.ceil(calc.transferBags / btFill)) : 0));
+  // 轉機旅客的行李不能同時算在「頭等/商務(BP)、豪經(BW)、經濟(BY)」又算在「BT」裡，否則會重複計算。
+  // 我們沒有轉機旅客各自實際艙等的資料（要同仁額外查會很花時間），所以用「這班本身各艙等的行李量佔比」
+  // 來假設轉機旅客的艙等分佈，按比例從三個艙等分別扣除，而不是整批都當作經濟艙扣
+  const sumLineBags = (lines) => (lines || []).reduce((s2, l) => s2 + (l.avg_bags || 0), 0);
+  // BT-OAL（轉外航）只從經濟艙扣除：頭等／商務／豪經的轉機行李留在各自艙等的櫃子裡（LOCAL + TRF）
+  const oalLines = dailyLines ? dailyLines.filter(l => l.onward === 'OAL') : [];
+  const oalBags = sumLineBags(oalLines);
+  const transferBagsTotal = dailyLines ? sumLineBags(dailyLines.filter(l => l.onward !== 'OAL'))
+    : (p31BtEntry ? sumLineBags(p31BtEntry.lines)
+    : (calc.isBtOutbound ? calc.transferBags : 0));
+  const totalCabinBagsRaw = firstBagsRaw + fcBagsRaw + premiumBagsRaw + economyBagsRaw;
+  const shareOf = (cabinBags) => totalCabinBagsRaw > 0 ? cabinBags / totalCabinBagsRaw : 0;
+  const fcBags = Math.max(0, fcBagsRaw - transferBagsTotal * shareOf(fcBagsRaw));
+  const premiumBags = Math.max(0, premiumBagsRaw - transferBagsTotal * shareOf(premiumBagsRaw));
+  const economyBagsLocal = Math.max(0, economyBagsRaw - transferBagsTotal * shareOf(economyBagsRaw) - oalBags);
+  // BF／BP／BW 的轉外航（BT-OAL）行李與原艙等混打，所以這三個艙等只扣除其他 BT，不扣 BT-OAL
+  const firstBags = Math.max(0, firstBagsRaw - transferBagsTotal * shareOf(firstBagsRaw));
+  // BW／BY：裝滿的櫃數之外，剩餘不超過10件預設放散艙。
+  // BF／BP 不預設散艙（高艙等行李損傷會嚴重影響旅客服務）：有行李就一律打櫃，無條件進位；頭等只要有旅客就至少 1 個 BF 櫃
+  const bf = withBf ? Math.max(1, Math.ceil(firstBags / fill)) : 0;
+  const bp = fcBags >= 0.5 ? Math.ceil(fcBags / fill) : 0;
+  const bw = ctnWithBulk(premiumBags, fill);
+  let by = ctnWithBulk(economyBagsLocal, fill);
   const bs = Number(row.bs) || 0; // BS／特殊行李直接輸入「櫃數」
   const crewCtn = Number(row.crew) || 0; // 組員行李現在直接輸入「櫃數」，不用再除以每櫃裝載量換算
   const categorySumWithoutCrew = bf + bp + bw + by + bt + bs;
@@ -1824,7 +2137,9 @@ document.getElementById('outstationSelect').addEventListener('change', (e) => {
   renderExportPreview();
 });
 
-document.getElementById('printPdfBtn').addEventListener('click', () => { window.print(); });
+document.getElementById('printPdfBtn').addEventListener('click', () => { endFakPrintMode(); window.print(); });
+document.getElementById('printFakSheetBtn').addEventListener('click', () => printFakSheet(document.getElementById('fakPrintDate').value));
+document.getElementById('fakPrintDate').addEventListener('change', renderFakSheetPreview);
 
 document.getElementById('downloadXlsxBtn').addEventListener('click', async () => {
   if(typeof XLSX === 'undefined'){ showToast('Excel 匯出元件載入失敗，請重新整理頁面再試'); return; }
@@ -1875,19 +2190,20 @@ document.getElementById('downloadXlsxBtn').addEventListener('click', async () =>
     showToast('匯出失敗：' + (e && e.message ? e.message : '未知錯誤'));
   }
 });
-const stepPill = {1: document.getElementById('pill1'), 2: document.getElementById('pill2'), 3: document.getElementById('pill3')};
-const stepPanel = {1: stepPaste, 2: stepCalc, 3: document.getElementById('stepExport')};
+const stepPill = {1: document.getElementById('pill1'), 2: document.getElementById('pill2'), 3: document.getElementById('pill3'), 4: document.getElementById('pill4')};
+const stepPanel = {1: stepPaste, 2: stepCalc, 3: document.getElementById('stepExport'), 4: document.getElementById('stepFak')};
 
 function showStep(step){
-  [1,2,3].forEach(n => {
+  [1,2,3,4].forEach(n => {
     if(n === step){ stepPanel[n].classList.remove('hidden'); stepPill[n].classList.add('active'); }
     else { stepPanel[n].classList.add('hidden'); stepPill[n].classList.remove('active'); }
   });
-  if(step !== 1) stepPill[1].classList.add('done');
+  if(step === 2 || step === 3) stepPill[1].classList.add('done');
+  if(step === 4) renderFakPreview();
   if(step === 2) render();
   if(step === 3) renderExportPreview();
 }
-[1,2,3].forEach(n => stepPill[n].addEventListener('click', () => showStep(n)));
+[1,2,3,4].forEach(n => stepPill[n].addEventListener('click', () => showStep(n)));
 document.getElementById('backToCalcBtnFromExport').addEventListener('click', () => showStep(2));
 
 // ---------------- flight search/autocomplete for the "搜尋並加入航班" box ----------------
@@ -2050,7 +2366,7 @@ function collectFakGrid(aoa, byDate, fakDetailOut, sheetLabel){
       if(fakDetailOut){
         if(!fakDetailOut[dc.date]) fakDetailOut[dc.date] = [];
         fakDetailOut[dc.date].push({
-          acType: sheetLabel || '',
+          acType: normAcName(sheetLabel || ''),
           container: String(row[containerCol] || '').trim() || '—',
           weight: String(row[weightCol] || '').trim() || '—',
           flights: String(cell).trim()
@@ -2096,7 +2412,11 @@ document.getElementById('fakExcelInput').addEventListener('change', (e) => {
       });
       const dateKeys = Object.keys(byDate).filter(d => byDate[d].length > 0);
       const n = dateKeys.length ? parseAndUpdateFak(dateKeys.sort().map(d => `${d}: ${byDate[d].join(', ')}`).join('\n')) : 0;
-      if(n > 0) dateKeys.forEach(d => { fakDetail[d] = detailByDate[d] || []; fakUploadedOn[d] = realTodayISO(); });
+      if(n > 0){
+        dateKeys.forEach(d => { fakDetail[d] = detailByDate[d] || []; fakUploadedOn[d] = realTodayISO(); });
+        const pd = document.getElementById('fakPrintDate');
+        if(pd) pd.value = fakSchedule[dateInput.value] ? dateInput.value : dateKeys[0];
+      }
       const uploadStatusEl = document.getElementById('fakUploadStatus');
       if(n > 0){
         const saved = saveFakSchedule();
@@ -2333,7 +2653,7 @@ initLocalStorage();
 // ---------------- UI text editor: make every button/label/note editable ----------------
 const SECTION_LABELS = {
   title_main: '整體標題', btn_theme_toggle: '整體標題',
-  nav_group1_title: '左側導覽', nav_pill1: '左側導覽', nav_pill2: '左側導覽', nav_pill3: '左側導覽',
+  nav_group1_title: '左側導覽', nav_pill1: '左側導覽', nav_pill2: '左側導覽', nav_pill3: '左側導覽', nav_group2_title: '左側導覽', nav_pill4: '左側導覽',
   label_date_input: '① 貼上資料', label_flight_input_quick: '① 貼上資料', ph_flight_input: '① 貼上資料',
   label_paste_area: '① 貼上資料', ph_paste_area: '① 貼上資料', note_paste_formats: '① 貼上資料',
   label_quick_grid: '① 貼上資料', th_qe_flight: '① 貼上資料', th_qe_first: '① 貼上資料', th_qe_business: '① 貼上資料',
@@ -2380,7 +2700,7 @@ function applyUiTexts(overrides){
 
 
 // ---------------- 定稿文字（由管理者確認，固定顯示）----------------
-const FROZEN_UI_TEXT = {"title_main": "行李預估及打櫃計畫 Baggage Allotment", "btn_theme_toggle": "深/淺色", "nav_group1_title": "隔日打櫃計畫", "nav_pill1": "航班人數／FAK 資料上傳", "nav_pill2": "打櫃預估總表", "nav_pill3": "匯出打櫃計畫表", "label_date_input": "日期（預設隔日，可自行改成當天或其他日期）", "label_upload_csv": "📄 上傳Excel/CSV檔", "btn_goto_calc": "查看「打櫃預估總表」目前已有資料 →", "label_quick_grid": "人工輸入 (如發現有航班遺漏，可直接手動加入)", "th_qe_flight": "班號", "th_qe_first": "頭等艙人數", "th_qe_business": "商務艙人數", "th_qe_premium": "豪經艙人數", "th_qe_economy": "經濟艙人數", "th_qe_transfer": "轉機人數", "btn_add_quick_row": "+ 新增一列", "btn_submit_quick_entry": "加入行李預估表 →", "note_quick_grid": "小Tip:請多使用上傳檔案方式，方便快速！ ", "label_fak_section": "航材櫃(FAK)更新（請每週依機務寄發之航材表更新，系統會自動配對往返航班）", "label_fak_excel_upload": "📄 上傳Excel/CSV檔", "label_fak_grid": "人工輸入 (如發現有遺漏或是臨時更改，可直接手動調整)", "th_fe_date": "日期", "th_fe_actype": "機型", "th_fe_flight": "航班", "th_fe_container": "櫃號", "th_fe_weight": "重量(KG)", "btn_add_fak_row": "+ 新增一列", "btn_submit_fak_entry": "加入FAK →", "btn_back_to_paste": "← 回到資料上傳頁", "label_date_display": "日期", "label_station_filter": "篩選出發站", "label_flight_input2": "搜尋航班（輸入班號或站名）", "label_duty_agent": "Duty Agent", "th_calc_flight": "班號", "th_calc_route": "航線", "th_calc_season": "節日提醒", "th_calc_actype": "機型", "th_calc_reg": "機號", "th_calc_nextday": "後日航班", "th_calc_fak": "FAK", "th_calc_first": "頭等人數", "th_calc_business": "商務人數", "th_calc_premium": "豪經人數", "th_calc_economy": "經濟人數", "th_calc_transfer": "轉機人數", "th_calc_staff": "員工人數", "th_calc_bs": "BS或特殊行李櫃數", "th_calc_total": "預估總件數", "th_calc_crew": "組員行李櫃數", "th_calc_std": "標準打櫃數 (系統自動計算)", "th_calc_conservative": "保守打櫃數 (系統自動計算)", "th_calc_publish": "建議發布打櫃數（可自行手動微調）", "th_calc_conf": "可信度", "btn_copy_estimate": "複製預估表（純文字檔）", "btn_clear_all": "清空全部", "legend_transfer": "紅色 BT-O/B：請留意是否需打專櫃", "legend_transfer_ib": "綠色 BT-I/B：請留意是否需打專櫃", "legend_unknown": "查無此班號歷史資料，需手動選擇航線", "btn_back_to_calc_export": "← 回到「打櫃預估總表」", "label_export_date": "日期", "label_export_mode": "模式", "btn_mode_tpe": "TPE 出發", "btn_mode_rmq": "RMQ 出發", "btn_mode_out": "外站 回 TPE/RMQ", "label_outstation_select": "選擇外站航班", "btn_download_xlsx": "下載 Excel（可編輯）", "btn_print_pdf": "列印／另存 PDF", "note_export_disclaimer": "發出前務必檢查檢查再檢查！", "ph:ph_flight_input2": "僅查詢功能", "ph:ph_duty_agent": "值班人員姓名"};
+const FROZEN_UI_TEXT = {"title_main": "行李預估及打櫃計畫 Baggage Allotment", "btn_theme_toggle": "深/淺色", "nav_group1_title": "隔日打櫃計畫", "nav_pill1": "航班人數資料上傳", "nav_group2_title": "航材櫃 FAK", "nav_pill4": "FAK 排班／確認表", "nav_pill2": "打櫃預估總表", "nav_pill3": "匯出打櫃計畫表", "label_date_input": "日期（預設隔日，可自行改成當天或其他日期）", "label_upload_csv": "📄 上傳Excel/CSV檔", "btn_goto_calc": "查看「打櫃預估總表」目前已有資料 →", "label_quick_grid": "人工輸入 (如發現有航班遺漏，可直接手動加入)", "th_qe_flight": "班號", "th_qe_first": "頭等艙人數", "th_qe_business": "商務艙人數", "th_qe_premium": "豪經艙人數", "th_qe_economy": "經濟艙人數", "th_qe_transfer": "轉機人數", "btn_add_quick_row": "+ 新增一列", "btn_submit_quick_entry": "加入行李預估表 →", "note_quick_grid": "小Tip:請多使用上傳檔案方式，方便快速！ ", "label_fak_section": "航材櫃(FAK)更新（請每週依機務寄發之航材表更新，系統會自動配對往返航班）", "label_fak_excel_upload": "📄 上傳Excel/CSV檔", "label_fak_grid": "人工輸入 (如發現有遺漏或是臨時更改，可直接手動調整)", "th_fe_date": "日期", "th_fe_actype": "機型", "th_fe_flight": "航班", "th_fe_container": "櫃號", "th_fe_weight": "重量(KG)", "btn_add_fak_row": "+ 新增一列", "btn_submit_fak_entry": "加入FAK →", "btn_back_to_paste": "← 回到資料上傳頁", "label_date_display": "日期", "label_station_filter": "篩選出發站", "label_flight_input2": "搜尋航班（輸入班號或站名）", "label_duty_agent": "Duty Agent", "th_calc_flight": "班號", "th_calc_route": "航線", "th_calc_season": "節日提醒", "th_calc_actype": "機型", "th_calc_reg": "機號", "th_calc_nextday": "後日航班", "th_calc_fak": "FAK", "th_calc_first": "頭等人數", "th_calc_business": "商務人數", "th_calc_premium": "豪經人數", "th_calc_economy": "經濟人數", "th_calc_transfer": "轉機人數", "th_calc_staff": "員工人數", "th_calc_bs": "BS或特殊行李櫃數", "th_calc_total": "預估總件數", "th_calc_crew": "組員行李櫃數", "th_calc_std": "標準打櫃數 (系統自動計算)", "th_calc_conservative": "保守打櫃數 (系統自動計算)", "th_calc_publish": "建議發布打櫃數（可自行手動微調）", "th_calc_conf": "可信度", "btn_copy_estimate": "複製預估表（純文字檔）", "btn_clear_all": "清空全部", "legend_transfer": "紅色 BT-O/B：請留意是否需打專櫃", "legend_transfer_ib": "綠色 BT-I/B：請留意是否需打專櫃", "legend_unknown": "查無此班號歷史資料，需手動選擇航線", "btn_back_to_calc_export": "← 回到「打櫃預估總表」", "label_export_date": "日期", "label_export_mode": "模式", "btn_mode_tpe": "TPE 出發", "btn_mode_rmq": "RMQ 出發", "btn_mode_out": "外站 回 TPE/RMQ", "label_outstation_select": "選擇外站航班", "btn_download_xlsx": "下載 Excel（可編輯）", "btn_print_pdf": "列印／另存 PDF", "note_export_disclaimer": "發出前務必檢查檢查再檢查！", "ph:ph_flight_input2": "僅查詢功能", "ph:ph_duty_agent": "值班人員姓名"};
 const FROZEN_FOOTER_NOTE = "提醒：本工具僅供打櫃預估參考，實際行李櫃數仍應依當日航班行李數量、是否有特殊團體行李、超大件/運動器材等滾動調整。";
 applyUiTexts(FROZEN_UI_TEXT);
 (function(){ const nc = document.getElementById('noteContent'); nc.textContent = FROZEN_FOOTER_NOTE; nc.style.whiteSpace = 'pre-wrap'; })();
