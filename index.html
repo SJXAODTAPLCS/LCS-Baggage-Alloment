@@ -2050,6 +2050,11 @@ function getExportRows(){
   if(exportMode === 'TPE_OUT') return withRoute.filter(r => getOrigin(r) === 'TPE');
   if(exportMode === 'RMQ_OUT') return withRoute.filter(r => getOrigin(r) === 'RMQ');
   if(exportMode === 'OUTSTATION' && exportOutstation){
+    if(exportOutstation.origin === 'ALL'){
+      // 全部外站回 TPE：依站別、班號排序
+      return withRoute.filter(r => { const [o, d] = r.route.split('-'); return d === exportOutstation.hub && o !== 'TPE' && o !== 'RMQ'; })
+        .sort((a, b) => a.route.localeCompare(b.route) || (parseInt(a.flightNo, 10) - parseInt(b.flightNo, 10)));
+    }
     if(exportOutstation.hub === 'BOTH'){
       return withRoute.filter(r => getOrigin(r) === exportOutstation.origin && (r.route.split('-')[1] === 'TPE' || r.route.split('-')[1] === 'RMQ'));
     }
@@ -2079,6 +2084,14 @@ function populateOutstationOptions(){
   });
   sel.innerHTML = '';
   const sortKey = (key) => { const [o,h] = key.split('|'); return o + (h==='BOTH' ? '~' : h); };
+  // 第一個選項：所有外站回 TPE 的航班合併成一張表
+  const hasAnyToTpe = Array.from(combos.values()).some(c => c.hub === 'TPE');
+  if(hasAnyToTpe){
+    const optAll = document.createElement('option');
+    optAll.value = 'ALL|TPE';
+    optAll.textContent = '全部外站 → TPE';
+    sel.appendChild(optAll);
+  }
   Array.from(combos.keys()).sort((a,b)=>sortKey(a).localeCompare(sortKey(b))).forEach(key => {
     const {origin, hub} = combos.get(key);
     const opt = document.createElement('option');
@@ -2086,7 +2099,9 @@ function populateOutstationOptions(){
     opt.textContent = hub === 'BOTH' ? `${origin} → TPE + RMQ（合併）` : `${origin} → ${hub}`;
     sel.appendChild(opt);
   });
-  if(combos.size > 0){
+  if(hasAnyToTpe){
+    exportOutstation = {origin:'ALL', hub:'TPE'};
+  } else if(combos.size > 0){
     const firstKey = Array.from(combos.keys()).sort((a,b)=>sortKey(a).localeCompare(sortKey(b)))[0];
     exportOutstation = combos.get(firstKey);
   } else {
@@ -2275,7 +2290,7 @@ document.getElementById('downloadXlsxBtn').addEventListener('click', async () =>
   const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
   const blob = new Blob([wbout], {type:'application/octet-stream'});
 
-  const modeLabel = exportMode === 'TPE_OUT' ? 'TPE出發' : exportMode === 'RMQ_OUT' ? 'RMQ出發' : `${exportOutstation?exportOutstation.origin:''}回${exportOutstation?exportOutstation.hub:''}`;
+  const modeLabel = exportMode === 'TPE_OUT' ? 'TPE出發' : exportMode === 'RMQ_OUT' ? 'RMQ出發' : (exportOutstation && exportOutstation.origin === 'ALL' ? `全部外站回${exportOutstation.hub}` : `${exportOutstation?exportOutstation.origin:''}回${exportOutstation?exportOutstation.hub:''}`);
   const filename = `行李打櫃計畫表_${dateInput.value}_${modeLabel}.xlsx`;
 
   try{
