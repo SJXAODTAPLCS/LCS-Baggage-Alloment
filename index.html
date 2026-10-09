@@ -461,7 +461,7 @@
       <button class="secondary" id="printPdfBtn" type="button" data-tkey="btn_print_pdf">列印／另存 PDF</button>
     </div>
     <div class="transfer-note">
-      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；美加／歐洲抵台航班若在上傳檔案的 REMARK 列出要打專櫃的轉出航班（例如 BT-JX711、BT-JX233、BT-MIX），系統會依該航班歷史轉出目的地比例分配轉機行李，自動判斷每個專櫃的櫃數，其餘併入 BT-MIX（畫面上以黃色網底標示），REMARK 原本寫的櫃數僅作為航班清單，不採用；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
+      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；抵台航班預報只有轉機總人數時，若在上傳檔案的 REMARK／轉機專櫃航班欄寫上轉出班號與人數，請寫成「轉出班號-人數」（例：32-9 / 26-8、BT-JX10-50），系統依人數×歷史每人件數判斷哪些班要打專櫃及櫃數，沒寫到的人數自動併入 BT-MIX（畫面上以黃色網底標示）；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
     </div>
   </div>
 
@@ -471,7 +471,7 @@
     </div>
     <div id="noteContent">
     <b>估算方式：</b>四個艙等人數優先採用你貼上/輸入的實際訂位人數；未填者退回該航線歷史平均人數。各艙等行李件數 = 人數 × 該航線該艙等歷史平均每人件數。「BS特殊行李」為手動輸入欄位，直接加總進行李件數計算；「組員行李櫃數」則是直接輸入「幾個櫃子」，不併入行李件數，而是在最後發布打櫃數時額外加總（發布打櫃數 = 依航線區域算出的建議打櫃數 + 組員行李櫃數）。每櫃裝載量與安全庫存標準差採「假期/旺季」或「平假日」分類中樣本數足夠（≥8筆）者計算；標準打櫃數 = 預估總件數 ÷ 平均每櫃件數（無條件進位）；保守打櫃數另加一個標準差的行李量緩衝。<br>
-    <b>轉機行李（BT）規則：</b>系統區分「BT-O/B」與「BT-I/B」兩種轉機情境。<b>BT-O/B</b>（橘色標籤，抵台航班：美加線抵台常轉東南亞、東南亞線抵台常轉美加）—這些旅客抵台後會繼續轉往下一班，行李需要獨立打成專櫃方便轉機，計算方式已導入 170 個班號在 2026/1/1～8/31 期間的實際轉機旅客與轉機行李統計（涵蓋 33 個BT-O/B航班中的 28 個），優先採用該班號實際「每轉機人平均件數」，無資料則退回整班平均概估；轉機專櫃的每櫃裝載量與一般行李相同，採該航線歷史裝載資料；美加／歐洲抵台航班可在 REMARK 列出要打專櫃的轉出航班，櫃數由系統判斷（見下方③匯出頁說明）。<b>BT-I/B</b>（藍色標籤，出發航班：承接美加轉東南亞或東南亞轉美加的旅客）—依裝載政策，這些行李在出發航班上視為當地行李，直接與一般旅客行李混打計算，不需要、也不會另外產生專櫃。<br>
+    <b>轉機行李（BT）規則：</b>系統區分「BT-O/B」與「BT-I/B」兩種轉機情境。<b>BT-O/B</b>（橘色標籤，抵台航班：美加線抵台常轉東南亞、東南亞線抵台常轉美加）—這些旅客抵台後會繼續轉往下一班，行李需要獨立打成專櫃方便轉機，計算方式已導入 170 個班號在 2026/1/1～8/31 期間的實際轉機旅客與轉機行李統計（涵蓋 33 個BT-O/B航班中的 28 個），優先採用該班號實際「每轉機人平均件數」，無資料則退回整班平均概估；轉機專櫃的每櫃裝載量與一般行李相同，採該航線歷史裝載資料；抵台航班只有轉機總人數時，可在 REMARK 寫「轉出班號-人數」，櫃數由系統判斷（見下方③匯出頁說明）。<b>BT-I/B</b>（藍色標籤，出發航班：承接美加轉東南亞或東南亞轉美加的旅客）—依裝載政策，這些行李在出發航班上視為當地行李，直接與一般旅客行李混打計算，不需要、也不會另外產生專櫃。<br>
     <b>留台/轉機拆分：</b>僅BT-O/B航班會顯示「留台行李 = 該艙等預估總行李 − 轉機行李」的拆分（僅供參考，實際仍請與轉機艙單核對）；BT-I/B航班不做這個拆分。<br>
     <b>資料儲存：</b>本頁資料只存在您目前這個瀏覽器分頁裡（本機模式），重新整理頁面不會消失，但不會分享給其他人、其他裝置或其他瀏覽器；請用「複製預估單」「下載Excel」或「列印/另存PDF」把結果分享出去。<br>
     <b>節日與連假提醒：</b>系統內建台灣國定假日／連假（含近年新增的教師節、光復節、行憲紀念日、勞動節）、日本黃金週、陸港澳十一長假（國慶+中秋）、聖誕跨年旺季（美加線）、伊斯蘭齋戒月／開齋節（印尼/馬來西亞/新加坡線）等節日行事曆，目前涵蓋 2025～2026 年日期；落在節日期間時，畫面會顯示提醒，且若該節日有足夠樣本數（≥4筆，優先合併2025+2026年同節日資料），會優先採用該節日的歷史統計計算預估，否則維持原本的平假日/寒暑假邏輯。2027年以後的日期，或齋戒月等移動式節日超出目前建置範圍時，系統不會顯示提醒，僅套用原本邏輯，屆時請提醒我更新行事曆。<br>
@@ -1414,7 +1414,7 @@ function parseAndImport(text){
         id: rowIdCounter++, flightNo: p.flightNo, route: info ? info.route : null,
         transferFlag: info ? info.transfer_flag : null,
         cabinPax: p.cabinPax, transferPax: p.transferPax || 0, bs: 0, crew: 0, staffPax: p.staffPax || 0, unknown: !info, isNextDay,
-        exportRemark: p.remark || '', reg: p.reg || '', acType: null, source: 'upload', onwardBtPax: p.onwardPax || null, trfKnown: !!p.trfKnown
+        exportRemark: p.remark || '', btRemarkSource: p.remark || '', reg: p.reg || '', acType: null, source: 'upload', onwardBtPax: p.onwardPax || null, trfKnown: !!p.trfKnown
       };
     };
 
@@ -1905,6 +1905,9 @@ function getDailyBtLines(row){
   if(!cap) return null;
   const info = flights[row.flightNo];
   const bagsPerPax = (info && info.transit_bags_per_pax) || 1.6; // 沒有專屬轉機比例時，用歷史經驗值代替
+  // 櫃數一律用航線歷史裝載資料的平均每櫃件數；cap（AKE 31／AKH 25）只用來判斷要不要獨立打專櫃
+  const rc = computeRow(row);
+  const fillLd = (rc && rc.containerFill) || cap;
   const lines = []; let smallSum = 0;
   Object.keys(row.onwardBtPax).forEach(onward => {
     const pax = row.onwardBtPax[onward];
@@ -1939,13 +1942,13 @@ function getDailyBtLines(row){
       return;
     }
     if(bags > cap){
-      lines.push({type:'dedicated', onward, avg_bags: Math.round(bags*10)/10, containers: Math.ceil(bags/cap)});
+      lines.push({type:'dedicated', onward, avg_bags: Math.round(bags*10)/10, containers: Math.ceil(bags/fillLd)});
     } else {
       smallSum += bags;
     }
   });
   if(smallSum > 0){
-    lines.push(smallSum <= 10 ? {type:'mix_bulk', avg_bags: Math.round(smallSum*10)/10} : {type:'mix_ctn', avg_bags: Math.round(smallSum*10)/10, containers: Math.ceil(smallSum/cap)});
+    lines.push(smallSum <= 10 ? {type:'mix_bulk', avg_bags: Math.round(smallSum*10)/10} : {type:'mix_ctn', avg_bags: Math.round(smallSum*10)/10, containers: Math.ceil(smallSum/fillLd)});
   }
   return lines.length ? lines : null;
 }
@@ -1959,77 +1962,40 @@ function formatBtLines(lines){
     return '';
   }).filter(Boolean).join(' ');
 }
-// 抵台 BT-O/B 航班只有轉機總人數（不分轉出班號）時，外站在 REMARK／「轉機專櫃航班」欄只列出要打專櫃的轉出航班，櫃數由系統判斷。
-//  支援寫法：BT-JX711*1、BT*JX800*1、BT-JX2（=JX02）、BT-JX32.26 MIX（JX32＋JX26 合打一組）、BT*MIX*1
-//  1. 轉機行李件數 = 轉機人數 × 該班號歷史每轉機旅客件數
-//     東南亞抵台若有「JX 美線」人數：只拿美線人數分給列出的美國航班；「JX 其他」／OAL 併入 BT-MIX
-//  2. 各專櫃（或合打組）的件數 = 依這班抵台航班歷史轉出目的地占比（DATA.transfer_breakdown）分配；
-//     同一目的地被列了好幾班時平均分攤；前幾大目的地查不到的，用「剩餘未列出的占比」與「最小占比」取小者估算
-//  3. 每櫃件數一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；外站既然列為專櫃，至少 1 櫃
-//  4. 剩下的件數併入 BT-MIX：超過10件打櫃，10件以下散艙
-// REMARK 裡寫的櫃數（*1）不採用，只拿來當專櫃航班清單
-const BT_REMARK_TOKEN = /BT\s*[-*＊]\s*(?:JX\s*([\d.\/、]+)(\s*MIX)?|(MIX))/gi;
-function parseRemarkBtFlights(text){
+// 抵台 BT-O/B 航班預報只有轉機總人數（不分轉出班號）時，外站在 REMARK／「轉機專櫃航班」欄
+// 寫上「轉出班號-人數」，例：32-9 / 26-8、BT-JX10-50、JX02-3（BT-rest-bulk 之類的文字忽略）。
+//  1. 寫了人數的班號：件數 = 人數 × 該班號歷史每轉機旅客件數
+//  2. 沒寫到的轉機人數（總人數 − 已寫人數，含 JX 其他／OAL）自動歸入 BT-MIX
+//  3. 之後與「預報表有拆轉出班號欄位」的做法相同（getDailyBtLines）：件數超過一櫃容量的班號打專櫃，
+//     其餘合併成 BT-MIX（10件以下散艙）；櫃數一律依航線歷史裝載資料的平均每櫃件數
+// 已拿掉依歷史目的地比例推算的做法：只有班號沒有人數時不做拆分，BT 只用總人數計算總櫃數
+const BT_REMARK_COUNT = /(?:BT\s*[-*＊]\s*)?(?:JX\s*)?0*(\d{1,4})\s*[-－:：]\s*(\d{1,3})(?!\d)/gi;
+function parseRemarkBtCounts(text){
   if(!text) return null;
-  const groups = []; const seen = new Set(); let m, hasMix = false;
-  BT_REMARK_TOKEN.lastIndex = 0;
-  while((m = BT_REMARK_TOKEN.exec(text)) !== null){
-    if(m[3]){ hasMix = true; continue; }
-    const fns = (m[1] || '').split(/[.\/、]/).map(x => x.replace(/^0+/, '')).filter(x => /^\d{1,4}$/.test(x) && !seen.has(x));
-    if(!fns.length) continue;
-    fns.forEach(x => seen.add(x));
-    groups.push({flights: fns, mix: fns.length > 1 || !!m[2]});
+  const out = {}; let m, any = false;
+  BT_REMARK_COUNT.lastIndex = 0;
+  while((m = BT_REMARK_COUNT.exec(text)) !== null){
+    const fn = m[1], pax = Number(m[2]);
+    if(!fn || !(pax > 0)) continue;
+    out[fn] = (out[fn] || 0) + pax; any = true;
   }
-  return (groups.length || hasMix) ? {groups, hasMix} : null;
+  return any ? out : null;
 }
-const padFn = fn => String(fn).padStart(2, '0');
-function btGroupLabel(g){ return `BT-JX${g.flights.map(padFn).join('.')}${g.mix ? ' MIX' : ''}`; }
 function getRemarkBtLines(row, calc){
   if(!calc || !calc.isBtOutbound || !(calc.transferPax > 0)) return null;
-  const parsed = parseRemarkBtFlights(row.exportRemark);
-  if(!parsed || !parsed.groups.length) return null;
-  const fill = calc.containerFill || BT_CAP[getRowUldType(row)] || 31;
-  const totalBags = calc.transferBags;
-  if(!(totalBags > 0)) return null;
-  const bpp = totalBags / calc.transferPax;
-  const usPax = row.onwardBtPax && Number(row.onwardBtPax.US) > 0 ? Number(row.onwardBtPax.US) : 0;
-  const baseBags = usPax > 0 ? Math.min(totalBags, usPax * bpp) : totalBags;
-  const bd = (DATA.transfer_breakdown && DATA.transfer_breakdown[row.flightNo]) || [];
-  const shareMap = {}; bd.forEach(([st, pct]) => { shareMap[st] = pct / 100; });
-  const destOf = fn => (flights[fn] && flights[fn].dest) || null;
-  const allFns = parsed.groups.flatMap(g => g.flights);
-  const destCount = {};
-  allFns.forEach(fn => { const d = destOf(fn); if(d && shareMap[d] !== undefined) destCount[d] = (destCount[d] || 0) + 1; });
-  const unknownFns = allFns.filter(fn => { const d = destOf(fn); return !(d && shareMap[d] !== undefined); });
-  const listedSum = bd.reduce((a, x) => a + x[1], 0) / 100;
-  const minShare = bd.length ? Math.min(...bd.map(x => x[1])) / 100 : 0.05;
-  const residual = Math.max(0, 1 - listedSum);
-  const unknownShare = unknownFns.length ? Math.max(0.02, Math.min(minShare, residual / unknownFns.length)) : 0;
-  const fnShare = fn => { const d = destOf(fn); return (d && shareMap[d] !== undefined) ? shareMap[d] / destCount[d] : unknownShare; };
-  // 有「JX 美線」人數時，分母只算美國目的地（歷史占比裡的美國站＋估算的未知班號），讓美線人數分到美國航班
-  let denom = 1;
-  if(usPax > 0){
-    const usDests = new Set(Object.values(flights).filter(f => f && f.transfer_flag === 'us_departure').map(f => f.dest));
-    denom = bd.filter(([st]) => usDests.has(st)).reduce((a, x) => a + x[1] / 100, 0) + unknownShare * unknownFns.length;
-    if(!(denom > 0)) denom = 1;
-  }
-  const lines = []; let used = 0;
-  parsed.groups.forEach(g => {
-    const share = g.flights.reduce((a, fn) => a + fnShare(fn), 0) / denom;
-    const bags = Math.min(baseBags * share, Math.max(0, baseBags - used));
-    used += bags;
-    lines.push({type:'dedicated', onward: g.flights.join('.'), label: btGroupLabel(g), avg_bags: Math.round(bags*10)/10, containers: Math.max(1, Math.ceil(bags / fill))});
-  });
-  const rest = Math.max(0, totalBags - used);
-  if(rest > 10) lines.push({type:'mix_ctn', avg_bags: Math.round(rest*10)/10, containers: Math.ceil(rest / fill)});
-  else if(rest > 0.5) lines.push({type:'mix_bulk', avg_bags: Math.round(rest*10)/10});
-  return lines;
+  const counts = parseRemarkBtCounts(row.btRemarkSource !== undefined && row.btRemarkSource !== '' ? row.btRemarkSource : row.exportRemark);
+  if(!counts) return null;
+  const listed = Object.values(counts).reduce((a, b) => a + b, 0);
+  const onward = {...counts};
+  const rest = Math.max(0, calc.transferPax - listed);
+  if(rest > 0) onward.JX = rest; // 沒寫到的人數 → 併入 BT-MIX
+  return getDailyBtLines({...row, onwardBtPax: onward});
 }
-// 把 REMARK 裡 BT 專櫃那幾段換成系統判斷後的櫃數，其他文字原樣保留
+// 匯出表的 REMARK：把「班號-人數」那些段落換成系統判斷後的打櫃文字，其他文字原樣保留
 function remarkWithComputedBt(row, lines){
-  const text = row.exportRemark || '';
-  const strip = /BT\s*[-*＊]\s*(?:JX\s*[\d.\/、]+(?:\s*MIX)?|MIX)(?:\s*[*＊]\s*\d+)?(?:\s*BULK)?/gi;
-  const kept = text.split(/\r?\n/).map(l => l.replace(strip, '').trim()).filter(Boolean);
+  const src = row.btRemarkSource || row.exportRemark || '';
+  const strip = /(?:BT\s*[-*＊]\s*)?(?:JX\s*)?\d{1,4}\s*[-－:：]\s*\d{1,3}(?!\d)|BT\s*[-*＊]?\s*rest\s*[-*＊]?\s*bulk/gi;
+  const kept = src.split(/\r?\n/).map(l => l.replace(strip, '').replace(/^[\s\/、,;；]+|[\s\/、,;；]+$/g, '').replace(/(\s*[\/、;；]\s*)+/g, ' / ').trim()).filter(l => l && !/^[\/\s]+$/.test(l));
   const btText = lines.map(l => formatBtLines([l])).filter(Boolean);
   return [...btText, ...kept].join('\n');
 }
@@ -2218,12 +2184,12 @@ function renderExportPreview(){
     html += `<td>${fmtDash(er.bf)}</td><td>${fmtDash(er.bp)}</td>`;
     if(hasW) html += `<td>${fmtDash(er.bw)}</td>`;
     const btTitle = er.btFromDaily ? ` title="依上傳檔案裡當天實際各轉出班號的轉機人數換算，與REMARK建議一致"`
-      : (er.btFromRemark ? ` title="依REMARK列出的專櫃航班＋歷史轉出目的地比例分配，每櫃約${Math.round(er.btFillUsed*10)/10}件（航線歷史裝載資料）"` : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : ''));
+      : (er.btFromRemark ? ` title="依REMARK寫的「轉出班號-人數」換算，其餘人數併入BT-MIX，每櫃約${Math.round(er.btFillUsed*10)/10}件（航線歷史裝載資料）"` : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : ''));
     const btBg = er.btFromDaily ? 'background:#d4f5dd;' : (er.btFromRemark ? 'background:#fff3cd;' : (er.btFromP31 ? 'background:#d7ecff;' : ''));
     html += `<td>${fmtDash(er.by)}</td><td${btTitle} style="${btBg}">${fmtDash(er.bt)}</td><td>${fmtDash(er.bs)}</td><td>${fmtDash(er.crewCtn)}</td>`;
     const ttlCellStyle = overCapacity ? ' style="background:#f8d7da; color:#842029; font-weight:700;" title="A321機型行李+FAK總櫃數上限10櫃，此班預估需要' + totalWithFak + '櫃"' : '';
     html += `<td${ttlCellStyle}>${er.ttl}</td><td>${fakCnt > 0 ? fakCnt : ''}</td>`;
-    html += `<td class="report-remark"><textarea class="remark-input" data-flight="${row.flightNo}" placeholder="${suggestedRemark(row).replace(/"/g,'&quot;')}" rows="1" style="width:100%; border:none; background:transparent; font-family:'Microsoft JhengHei', var(--sans); font-size:11.5px; color:#111; resize:none; overflow:hidden; white-space:pre-wrap; display:block;">${(er.btFromRemark ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark||''))}</textarea>`;
+    html += `<td class="report-remark"><textarea class="remark-input" data-flight="${row.flightNo}" placeholder="${suggestedRemark(row).replace(/"/g,'&quot;')}" rows="1" style="width:100%; border:none; background:transparent; font-family:'Microsoft JhengHei', var(--sans); font-size:11.5px; color:#111; resize:none; overflow:hidden; white-space:pre-wrap; display:block;">${((er.btFromRemark && (row.exportRemark || '') === (row.btRemarkSource || '')) ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark||''))}</textarea>`;
     if(row.transferFlag && suggestedRemark(row)){
       html += `<button type="button" class="remark-insert-btn" data-flight="${row.flightNo}" data-text="${suggestedRemark(row).replace(/"/g,'&quot;')}" style="margin-left:4px; font-size:10px; padding:1px 5px; cursor:pointer;">帶入建議</button>`;
     }
@@ -2343,7 +2309,7 @@ document.getElementById('downloadXlsxBtn').addEventListener('click', async () =>
     const {row, calc} = er;
     const dest = isOutstation ? (exportOutstation && exportOutstation.hub === 'BOTH' ? `${row.route.split('-')[0]} → ${row.route.split('-')[1]}` : row.route.split('-')[0]) : row.route.split('-')[1];
     const bagVals = hasW ? [er.bf,er.bp,er.bw,er.by,er.bt,er.bs,er.crewCtn] : [er.bf,er.bp,er.by,er.bt,er.bs,er.crewCtn];
-    const remarkVal = er.btFromRemark ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark || suggestedRemark(row));
+    const remarkVal = (er.btFromRemark && (row.exportRemark || '') === (row.btRemarkSource || '')) ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark || suggestedRemark(row));
     const fakCnt = getFakCount(getEffectiveDate(row), row.flightNo);
     aoa.push([row.flightNo, dest, (routes[row.route]&&routes[row.route].櫃型)||'', ...bagVals, er.ttl, (fakCnt > 0 ? fakCnt : ''), remarkVal]);
   });
@@ -2730,7 +2696,7 @@ function rowsToPlain(){
   return rows.map(r => ({
     flightNo: r.flightNo, route: r.route, transferFlag: r.transferFlag,
     cabinPax: r.cabinPax, transferPax: r.transferPax, bs: r.bs, crew: r.crew, unknown: r.unknown,
-    isNextDay: r.isNextDay, manualContainerOverride: r.manualContainerOverride, exportRemark: r.exportRemark,
+    isNextDay: r.isNextDay, manualContainerOverride: r.manualContainerOverride, exportRemark: r.exportRemark, btRemarkSource: r.btRemarkSource || '',
     reg: r.reg || '', acType: r.acType || null, bsUnit: 'ctn', source: r.source || 'manual', staffPax: r.staffPax || 0, onwardBtPax: r.onwardBtPax || null, trfKnown: !!r.trfKnown
   }));
 }
