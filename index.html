@@ -1236,7 +1236,7 @@ function detectPnlHeaderCols(headerLine, subHeaderLine){
   let staff = findCol(/^STAFF|員工/i);
   const btIn = findCol(/^BT-?I\/?B/i);
   const btOut = findCol(/^BT-?O\/?B/i);
-  let remark = findCol(/備註|REMARK|NOTES?/i);
+  let remark = findCol(/備註|REMARK|NOTES?|專櫃/i); // 「轉機專櫃航班」欄也視為備註
   // 員工人數欄的標題若是中文又變亂碼：Pax 和 BT-I/B（或 BT-O/B）之間夾著的那一欄就是員工人數
   if(staff < 0){
     const paxCol = findCol(/^PAX/i);
@@ -1251,7 +1251,7 @@ function detectPnlHeaderCols(headerLine, subHeaderLine){
   // BT-O/B 底下如果還有第二行子表頭，列出各個轉出班號（例如 JX10、JX32...），代表這份檔案是
   // 「當天實際各轉出班號的轉機人數」明細，比只有一個總數更準，要另外解析、加總
   let onwardCols = null, onwardEnd = -1;
-  const oalCols = [], jxAnyCols = [];
+  const oalCols = [], jxAnyCols = [], usCols = [];
   if(subHeaderLine && btOut >= 0){
     const subCells = subHeaderLine.split(',').map(f => f.trim());
     const map = {};
@@ -1260,16 +1260,17 @@ function detectPnlHeaderCols(headerLine, subHeaderLine){
       if(subCells[i] === '') break; // 子表頭到這裡結束（後面通常接 REMARK 那些空白欄）
       const m = subCells[i].match(/^JX0*(\d+)$/i);
       if(m) map[m[1]] = i; // 有寫班號的欄位，記錄下來供拆分BT建議用
+      else if(/^JX\s*美/i.test(subCells[i])) usCols.push(i); // 「JX 美線」：東南亞抵台轉美國 JX 航班的人數（不分班號）
       else if(/^JX\b|^JX$/i.test(subCells[i])) jxAnyCols.push(i); // 只寫「JX」沒寫班號：美國／歐洲抵台轉出 JX 航班（不分班號）
       // 沒寫班號但仍有標籤的欄位（例如「其他」）：代表轉外航（OAL）的旅客，記錄下來；
       // TPE/RMQ 出發的航班會另外算成 BT-OAL 專櫃，抵台航班則維持只算進轉機人數總數
       else oalCols.push(i);
     }
     onwardEnd = i - 1;
-    if(Object.keys(map).length > 0 || oalCols.length > 0 || jxAnyCols.length > 0) onwardCols = map;
+    if(Object.keys(map).length > 0 || oalCols.length > 0 || jxAnyCols.length > 0 || usCols.length > 0) onwardCols = map;
   }
   if(staff < 0 && btIn < 0 && btOut < 0 && remark < 0) return null; // 不像是有這些新欄位的表頭，當作沒有表頭
-  return { staff, btIn, btOut, remark, onwardCols, onwardEnd, oalCols, jxAnyCols };
+  return { staff, btIn, btOut, remark, onwardCols, onwardEnd, oalCols, jxAnyCols, usCols };
 }
 
 function tryParsePnlLine(line, headerCols){
@@ -1328,6 +1329,9 @@ function tryParsePnlLine(line, headerCols){
       let jxAnySum = 0;
       (headerCols.jxAnyCols || []).forEach(ci => { const v = fields[ci]; if(/^\d+$/.test(v || '')) jxAnySum += Number(v); });
       if(jxAnySum > 0) onwardPax.JX = jxAnySum;
+      let usSum = 0;
+      (headerCols.usCols || []).forEach(ci => { const v = fields[ci]; if(/^\d+$/.test(v || '')) usSum += Number(v); });
+      if(usSum > 0) onwardPax.US = usSum;
       if(Object.keys(onwardPax).length === 0) onwardPax = null;
       transferPax = sum;
     } else {
@@ -1906,7 +1910,7 @@ function getDailyBtLines(row){
     const pax = row.onwardBtPax[onward];
     const bags = pax * bagsPerPax;
     // 「JX」不分班號：不拆到特定轉出班號，交給轉機總人數 × 每人件數 ÷ 航線平均每櫃件數的算法（REMARK 有列專櫃航班時改用 getRemarkBtLines）（同美加抵台航班原本做法）
-    if(onward === 'JX'){
+    if(onward === 'JX' || onward === 'US'){
       // 同一班如果還有其他寫了班號的轉出欄位（東南亞抵台那種拆班號的格式），「JX 其他」就併入 BT-MIX 一起算；
       // 只有「JX 其他」一欄時（美國／歐洲抵台），交給轉機總人數的算法
       const hasNumbered = Object.keys(row.onwardBtPax).some(k => /^\d+$/.test(k) && row.onwardBtPax[k] > 0);
@@ -1947,6 +1951,7 @@ function getDailyBtLines(row){
 }
 function formatBtLines(lines){
   return lines.map(l => {
+    if(l.type === 'dedicated' && l.label) return `${l.label} *${l.containers}`;
     if(l.type === 'dedicated') return l.onward === 'OAL' ? `BT-OAL *${l.containers} FOR TRF BY` : `BT-JX${String(l.onward).padStart(2,'0')} *${l.containers}`;
     if(l.type === 'oal_bulk') return 'BT-OAL BULK FOR TRF BY';
     if(l.type === 'mix_ctn') return `BT-MIX *${l.containers || 1}`;
@@ -1954,55 +1959,77 @@ function formatBtLines(lines){
     return '';
   }).filter(Boolean).join(' ');
 }
-// 美加／歐洲抵台航班：預報表 BT-O/B 只有「JX 其他」總人數（不分轉出班號），
-// 外站在 REMARK 只列出「要打專櫃的轉出航班」（例：BT-JX711*1、BT*JX800*1、BT*MIX*1），櫃數由系統判斷：
-//  1. 轉機行李總件數 = 轉機人數 × 該班號歷史每轉機旅客件數
-//  2. 各專櫃航班的件數 = 總件數 × 該航班目的地在這班抵台航班歷史轉出目的地中的占比（DATA.transfer_breakdown）；
-//     同一目的地被列了好幾班時平均分攤；歷史前五大目的地查不到的，暫用前五名中最小的占比估算（無資料時 5%）
+// 抵台 BT-O/B 航班只有轉機總人數（不分轉出班號）時，外站在 REMARK／「轉機專櫃航班」欄只列出要打專櫃的轉出航班，櫃數由系統判斷。
+//  支援寫法：BT-JX711*1、BT*JX800*1、BT-JX2（=JX02）、BT-JX32.26 MIX（JX32＋JX26 合打一組）、BT*MIX*1
+//  1. 轉機行李件數 = 轉機人數 × 該班號歷史每轉機旅客件數
+//     東南亞抵台若有「JX 美線」人數：只拿美線人數分給列出的美國航班；「JX 其他」／OAL 併入 BT-MIX
+//  2. 各專櫃（或合打組）的件數 = 依這班抵台航班歷史轉出目的地占比（DATA.transfer_breakdown）分配；
+//     同一目的地被列了好幾班時平均分攤；前幾大目的地查不到的，用「剩餘未列出的占比」與「最小占比」取小者估算
 //  3. 每櫃件數一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；外站既然列為專櫃，至少 1 櫃
-//  4. 剩下的件數併入 BT-MIX：超過10件打櫃，10件以下散艙（同其他 BT-MIX 規則）
+//  4. 剩下的件數併入 BT-MIX：超過10件打櫃，10件以下散艙
 // REMARK 裡寫的櫃數（*1）不採用，只拿來當專櫃航班清單
+const BT_REMARK_TOKEN = /BT\s*[-*＊]\s*(?:JX\s*([\d.\/、]+)(\s*MIX)?|(MIX))/gi;
 function parseRemarkBtFlights(text){
   if(!text) return null;
-  const re = /BT\s*[-*＊]\s*(?:JX\s*0*(\d{1,4})|(MIX))/gi;
-  const list = []; let m, hasMix = false;
-  while((m = re.exec(text)) !== null){
-    if(m[2]) hasMix = true;
-    else if(m[1] && !list.includes(m[1])) list.push(m[1]);
+  const groups = []; const seen = new Set(); let m, hasMix = false;
+  BT_REMARK_TOKEN.lastIndex = 0;
+  while((m = BT_REMARK_TOKEN.exec(text)) !== null){
+    if(m[3]){ hasMix = true; continue; }
+    const fns = (m[1] || '').split(/[.\/、]/).map(x => x.replace(/^0+/, '')).filter(x => /^\d{1,4}$/.test(x) && !seen.has(x));
+    if(!fns.length) continue;
+    fns.forEach(x => seen.add(x));
+    groups.push({flights: fns, mix: fns.length > 1 || !!m[2]});
   }
-  return (list.length || hasMix) ? {flights: list, hasMix} : null;
+  return (groups.length || hasMix) ? {groups, hasMix} : null;
 }
+const padFn = fn => String(fn).padStart(2, '0');
+function btGroupLabel(g){ return `BT-JX${g.flights.map(padFn).join('.')}${g.mix ? ' MIX' : ''}`; }
 function getRemarkBtLines(row, calc){
   if(!calc || !calc.isBtOutbound || !(calc.transferPax > 0)) return null;
   const parsed = parseRemarkBtFlights(row.exportRemark);
-  if(!parsed || !parsed.flights.length) return null;
+  if(!parsed || !parsed.groups.length) return null;
   const fill = calc.containerFill || BT_CAP[getRowUldType(row)] || 31;
   const totalBags = calc.transferBags;
   if(!(totalBags > 0)) return null;
+  const bpp = totalBags / calc.transferPax;
+  const usPax = row.onwardBtPax && Number(row.onwardBtPax.US) > 0 ? Number(row.onwardBtPax.US) : 0;
+  const baseBags = usPax > 0 ? Math.min(totalBags, usPax * bpp) : totalBags;
   const bd = (DATA.transfer_breakdown && DATA.transfer_breakdown[row.flightNo]) || [];
   const shareMap = {}; bd.forEach(([st, pct]) => { shareMap[st] = pct / 100; });
-  const minShare = bd.length ? Math.min(...bd.map(x => x[1])) / 100 : 0.05;
   const destOf = fn => (flights[fn] && flights[fn].dest) || null;
+  const allFns = parsed.groups.flatMap(g => g.flights);
   const destCount = {};
-  parsed.flights.forEach(fn => { const d = destOf(fn); if(d) destCount[d] = (destCount[d] || 0) + 1; });
+  allFns.forEach(fn => { const d = destOf(fn); if(d && shareMap[d] !== undefined) destCount[d] = (destCount[d] || 0) + 1; });
+  const unknownFns = allFns.filter(fn => { const d = destOf(fn); return !(d && shareMap[d] !== undefined); });
+  const listedSum = bd.reduce((a, x) => a + x[1], 0) / 100;
+  const minShare = bd.length ? Math.min(...bd.map(x => x[1])) / 100 : 0.05;
+  const residual = Math.max(0, 1 - listedSum);
+  const unknownShare = unknownFns.length ? Math.max(0.02, Math.min(minShare, residual / unknownFns.length)) : 0;
+  const fnShare = fn => { const d = destOf(fn); return (d && shareMap[d] !== undefined) ? shareMap[d] / destCount[d] : unknownShare; };
+  // 有「JX 美線」人數時，分母只算美國目的地（歷史占比裡的美國站＋估算的未知班號），讓美線人數分到美國航班
+  let denom = 1;
+  if(usPax > 0){
+    const usDests = new Set(Object.values(flights).filter(f => f && f.transfer_flag === 'us_departure').map(f => f.dest));
+    denom = bd.filter(([st]) => usDests.has(st)).reduce((a, x) => a + x[1] / 100, 0) + unknownShare * unknownFns.length;
+    if(!(denom > 0)) denom = 1;
+  }
   const lines = []; let used = 0;
-  parsed.flights.forEach(fn => {
-    const d = destOf(fn);
-    const known = d && shareMap[d] !== undefined;
-    const share = known ? shareMap[d] / destCount[d] : minShare;
-    const bags = Math.min(totalBags * share, Math.max(0, totalBags - used));
+  parsed.groups.forEach(g => {
+    const share = g.flights.reduce((a, fn) => a + fnShare(fn), 0) / denom;
+    const bags = Math.min(baseBags * share, Math.max(0, baseBags - used));
     used += bags;
-    lines.push({type:'dedicated', onward: fn, dest: d, share_known: known, avg_bags: Math.round(bags*10)/10, containers: Math.max(1, Math.ceil(bags / fill))});
+    lines.push({type:'dedicated', onward: g.flights.join('.'), label: btGroupLabel(g), avg_bags: Math.round(bags*10)/10, containers: Math.max(1, Math.ceil(bags / fill))});
   });
   const rest = Math.max(0, totalBags - used);
   if(rest > 10) lines.push({type:'mix_ctn', avg_bags: Math.round(rest*10)/10, containers: Math.ceil(rest / fill)});
-  else if(rest > 0) lines.push({type:'mix_bulk', avg_bags: Math.round(rest*10)/10});
+  else if(rest > 0.5) lines.push({type:'mix_bulk', avg_bags: Math.round(rest*10)/10});
   return lines;
 }
-// 把 REMARK 裡 BT 專櫃那幾行換成系統判斷後的櫃數，其他文字原樣保留
+// 把 REMARK 裡 BT 專櫃那幾段換成系統判斷後的櫃數，其他文字原樣保留
 function remarkWithComputedBt(row, lines){
   const text = row.exportRemark || '';
-  const kept = text.split(/\r?\n/).map(l => l.replace(/BT\s*[-*＊]\s*(?:JX\s*0*\d{1,4}|MIX)(?:\s*[*＊]\s*\d+)?(?:\s*BULK)?/gi, '').trim()).filter(Boolean);
+  const strip = /BT\s*[-*＊]\s*(?:JX\s*[\d.\/、]+(?:\s*MIX)?|MIX)(?:\s*[*＊]\s*\d+)?(?:\s*BULK)?/gi;
+  const kept = text.split(/\r?\n/).map(l => l.replace(strip, '').trim()).filter(Boolean);
   const btText = lines.map(l => formatBtLines([l])).filter(Boolean);
   return [...btText, ...kept].join('\n');
 }
