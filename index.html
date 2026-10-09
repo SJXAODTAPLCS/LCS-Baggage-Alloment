@@ -461,7 +461,7 @@
       <button class="secondary" id="printPdfBtn" type="button" data-tkey="btn_print_pdf">列印／另存 PDF</button>
     </div>
     <div class="transfer-note">
-      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；抵台航班預報只有轉機總人數時，若在上傳檔案的 REMARK／轉機專櫃航班欄寫上轉出班號與人數，請寫成「轉出班號-人數」（例：32-9 / 26-8、BT-JX10-50），系統依人數×歷史每人件數判斷哪些班要打專櫃及櫃數，沒寫到的人數自動併入 BT-MIX（畫面上以黃色網底標示）；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
+      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；抵台航班預報只有轉機總人數時，若在上傳檔案的 REMARK／轉機專櫃航班欄寫上轉出班號與人數，請寫成「轉出班號-人數」（例：32-9 / 26-8、BT-JX10-50、BT-JX711 22；可加 BT*JX785 bulk、BT*rest MIX ULD），系統依人數×歷史每人件數判斷哪些班要打專櫃及櫃數，沒寫到的人數自動併入 BT-MIX（畫面上以黃色網底標示）；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
     </div>
   </div>
 
@@ -1957,6 +1957,7 @@ function formatBtLines(lines){
     if(l.type === 'dedicated' && l.label) return `${l.label} *${l.containers}`;
     if(l.type === 'dedicated') return l.onward === 'OAL' ? `BT-OAL *${l.containers} FOR TRF BY` : `BT-JX${String(l.onward).padStart(2,'0')} *${l.containers}`;
     if(l.type === 'oal_bulk') return 'BT-OAL BULK FOR TRF BY';
+    if(l.type === 'flight_bulk') return `BT-JX${String(l.onward).padStart(2,'0')} BULK`;
     if(l.type === 'mix_ctn') return `BT-MIX *${l.containers || 1}`;
     if(l.type === 'mix_bulk') return 'BT-MIX BULK';
     return '';
@@ -1969,32 +1970,50 @@ function formatBtLines(lines){
 //  3. 之後與「預報表有拆轉出班號欄位」的做法相同（getDailyBtLines）：件數超過一櫃容量的班號打專櫃，
 //     其餘合併成 BT-MIX（10件以下散艙）；櫃數一律依航線歷史裝載資料的平均每櫃件數
 // 已拿掉依歷史目的地比例推算的做法：只有班號沒有人數時不做拆分，BT 只用總人數計算總櫃數
-const BT_REMARK_COUNT = /(?:BT\s*[-*＊]\s*)?(?:JX\s*)?0*(\d{1,4})\s*[-－:：]\s*(\d{1,3})(?!\d)/gi;
+// 「班號-人數」或「JX班號 人數」（有 JX 字樣時可用空白分隔，例：BT-JX711 22）
+const BT_REMARK_COUNT = /(?:BT\s*[-*＊]\s*)?JX\s*0*(\d{1,4})\s*(?:[-－:：]\s*|\s+)(\d{1,3})(?![\d.])|(?:BT\s*[-*＊]\s*)?(?<![\d.])0*(\d{1,4})\s*[-－:：]\s*(\d{1,3})(?![\d.])/gi;
+// 指定散艙的班號（例：BT*JX785 bulk）：件數未知，照寫法標成 BT-JX785 BULK，不另外打櫃
+const BT_REMARK_FLIGHT_BULK = /(?:BT\s*[-*＊]\s*)?JX\s*0*(\d{1,4})\s*[-－]?\s*BULK/gi;
+// 其餘人數的處理方式：BT*rest MIX ULD（打櫃）／BT-rest-bulk（散艙）
+const BT_REMARK_REST = /BT\s*[-*＊]?\s*REST\s*[-*＊]?\s*(?:MIX\s*)?(ULD|BULK)/i;
 function parseRemarkBtCounts(text){
   if(!text) return null;
-  const out = {}; let m, any = false;
+  const counts = {}; let m, any = false;
   BT_REMARK_COUNT.lastIndex = 0;
   while((m = BT_REMARK_COUNT.exec(text)) !== null){
-    const fn = m[1], pax = Number(m[2]);
+    const fn = m[1] || m[3], pax = Number(m[2] || m[4]);
     if(!fn || !(pax > 0)) continue;
-    out[fn] = (out[fn] || 0) + pax; any = true;
+    counts[fn] = (counts[fn] || 0) + pax; any = true;
   }
-  return any ? out : null;
+  const bulkFlights = [];
+  BT_REMARK_FLIGHT_BULK.lastIndex = 0;
+  while((m = BT_REMARK_FLIGHT_BULK.exec(text)) !== null){ if(!counts[m[1]] && !bulkFlights.includes(m[1])) bulkFlights.push(m[1]); }
+  const r = text.match(BT_REMARK_REST);
+  const restMode = r ? r[1].toUpperCase() : null;
+  return any ? {counts, bulkFlights, restMode} : null;
 }
 function getRemarkBtLines(row, calc){
   if(!calc || !calc.isBtOutbound || !(calc.transferPax > 0)) return null;
-  const counts = parseRemarkBtCounts(row.btRemarkSource !== undefined && row.btRemarkSource !== '' ? row.btRemarkSource : row.exportRemark);
-  if(!counts) return null;
+  const parsed = parseRemarkBtCounts(row.btRemarkSource !== undefined && row.btRemarkSource !== '' ? row.btRemarkSource : row.exportRemark);
+  if(!parsed) return null;
+  const counts = parsed.counts;
   const listed = Object.values(counts).reduce((a, b) => a + b, 0);
   const onward = {...counts};
   const rest = Math.max(0, calc.transferPax - listed);
   if(rest > 0) onward.JX = rest; // 沒寫到的人數 → 併入 BT-MIX
-  return getDailyBtLines({...row, onwardBtPax: onward});
+  let lines = getDailyBtLines({...row, onwardBtPax: onward}) || [];
+  // 外站指定 rest MIX ULD：其餘行李一定打櫃（即使 10 件以下）；rest bulk：10 件以下照原規則散艙，超過10件仍打櫃
+  if(parsed.restMode === 'ULD'){
+    lines = lines.map(l => l.type === 'mix_bulk' ? {type:'mix_ctn', avg_bags: l.avg_bags, containers: 1, forced: true} : l);
+  }
+  // 指定散艙的班號：照外站寫法列出 BULK（件數未知，已包含在 BT-MIX 的估算裡）
+  parsed.bulkFlights.forEach(fn => lines.push({type:'flight_bulk', onward: fn}));
+  return lines.length ? lines : null;
 }
 // 匯出表的 REMARK：把「班號-人數」那些段落換成系統判斷後的打櫃文字，其他文字原樣保留
 function remarkWithComputedBt(row, lines){
   const src = row.btRemarkSource || row.exportRemark || '';
-  const strip = /(?:BT\s*[-*＊]\s*)?(?:JX\s*)?\d{1,4}\s*[-－:：]\s*\d{1,3}(?!\d)|BT\s*[-*＊]?\s*rest\s*[-*＊]?\s*bulk/gi;
+  const strip = /(?:BT\s*[-*＊]\s*)?JX\s*\d{1,4}\s*[-－]?\s*BULK|(?:BT\s*[-*＊]\s*)?JX\s*\d{1,4}\s*(?:[-－:：]\s*|\s+)\d{1,3}(?![\d.])|(?:BT\s*[-*＊]\s*)?\d{1,4}\s*[-－:：]\s*\d{1,3}(?![\d.])|BT\s*[-*＊]?\s*REST\s*[-*＊]?\s*(?:MIX\s*)?(?:ULD|BULK)/gi;
   const kept = src.split(/\r?\n/).map(l => l.replace(strip, '').replace(/^[\s\/、,;；]+|[\s\/、,;；]+$/g, '').replace(/(\s*[\/、;；]\s*)+/g, ' / ').trim()).filter(l => l && !/^[\/\s]+$/.test(l));
   const btText = lines.map(l => formatBtLines([l])).filter(Boolean);
   return [...btText, ...kept].join('\n');
