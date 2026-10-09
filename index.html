@@ -461,7 +461,7 @@
       <button class="secondary" id="printPdfBtn" type="button" data-tkey="btn_print_pdf">列印／另存 PDF</button>
     </div>
     <div class="transfer-note">
-      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位若為美加線／東南亞線互轉的航班，改依季節固定規則計算每櫃裝載量（冬季10-2月約20件、聖誕跨年高峰期12/20-1/2約15-18件、夏季3-9月約20-23件，畫面上以黃色網底標示），其餘轉機情況仍採歷史統計估算；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
+      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；美加／歐洲抵台航班若在上傳檔案的 REMARK 列出要打專櫃的轉出航班（例如 BT-JX711、BT-JX233、BT-MIX），系統會依該航班歷史轉出目的地比例分配轉機行李，自動判斷每個專櫃的櫃數，其餘併入 BT-MIX（畫面上以黃色網底標示），REMARK 原本寫的櫃數僅作為航班清單，不採用；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
     </div>
   </div>
 
@@ -471,11 +471,11 @@
     </div>
     <div id="noteContent">
     <b>估算方式：</b>四個艙等人數優先採用你貼上/輸入的實際訂位人數；未填者退回該航線歷史平均人數。各艙等行李件數 = 人數 × 該航線該艙等歷史平均每人件數。「BS特殊行李」為手動輸入欄位，直接加總進行李件數計算；「組員行李櫃數」則是直接輸入「幾個櫃子」，不併入行李件數，而是在最後發布打櫃數時額外加總（發布打櫃數 = 依航線區域算出的建議打櫃數 + 組員行李櫃數）。每櫃裝載量與安全庫存標準差採「假期/旺季」或「平假日」分類中樣本數足夠（≥8筆）者計算；標準打櫃數 = 預估總件數 ÷ 平均每櫃件數（無條件進位）；保守打櫃數另加一個標準差的行李量緩衝。<br>
-    <b>轉機行李（BT）規則：</b>系統區分「BT-O/B」與「BT-I/B」兩種轉機情境。<b>BT-O/B</b>（橘色標籤，抵台航班：美加線抵台常轉東南亞、東南亞線抵台常轉美加）—這些旅客抵台後會繼續轉往下一班，行李需要獨立打成專櫃方便轉機，計算方式已導入 170 個班號在 2026/1/1～8/31 期間的實際轉機旅客與轉機行李統計（涵蓋 33 個BT-O/B航班中的 28 個），優先採用該班號實際「每轉機人平均件數」，無資料則退回整班平均概估；美加↔東南亞互轉的行李，每櫃裝載量另依季節固定規則計算（見下方③匯出頁說明）。<b>BT-I/B</b>（藍色標籤，出發航班：承接美加轉東南亞或東南亞轉美加的旅客）—依裝載政策，這些行李在出發航班上視為當地行李，直接與一般旅客行李混打計算，不需要、也不會另外產生專櫃。<br>
+    <b>轉機行李（BT）規則：</b>系統區分「BT-O/B」與「BT-I/B」兩種轉機情境。<b>BT-O/B</b>（橘色標籤，抵台航班：美加線抵台常轉東南亞、東南亞線抵台常轉美加）—這些旅客抵台後會繼續轉往下一班，行李需要獨立打成專櫃方便轉機，計算方式已導入 170 個班號在 2026/1/1～8/31 期間的實際轉機旅客與轉機行李統計（涵蓋 33 個BT-O/B航班中的 28 個），優先採用該班號實際「每轉機人平均件數」，無資料則退回整班平均概估；轉機專櫃的每櫃裝載量與一般行李相同，採該航線歷史裝載資料；美加／歐洲抵台航班可在 REMARK 列出要打專櫃的轉出航班，櫃數由系統判斷（見下方③匯出頁說明）。<b>BT-I/B</b>（藍色標籤，出發航班：承接美加轉東南亞或東南亞轉美加的旅客）—依裝載政策，這些行李在出發航班上視為當地行李，直接與一般旅客行李混打計算，不需要、也不會另外產生專櫃。<br>
     <b>留台/轉機拆分：</b>僅BT-O/B航班會顯示「留台行李 = 該艙等預估總行李 − 轉機行李」的拆分（僅供參考，實際仍請與轉機艙單核對）；BT-I/B航班不做這個拆分。<br>
     <b>資料儲存：</b>本頁資料只存在您目前這個瀏覽器分頁裡（本機模式），重新整理頁面不會消失，但不會分享給其他人、其他裝置或其他瀏覽器；請用「複製預估單」「下載Excel」或「列印/另存PDF」把結果分享出去。<br>
     <b>節日與連假提醒：</b>系統內建台灣國定假日／連假（含近年新增的教師節、光復節、行憲紀念日、勞動節）、日本黃金週、陸港澳十一長假（國慶+中秋）、聖誕跨年旺季（美加線）、伊斯蘭齋戒月／開齋節（印尼/馬來西亞/新加坡線）等節日行事曆，目前涵蓋 2025～2026 年日期；落在節日期間時，畫面會顯示提醒，且若該節日有足夠樣本數（≥4筆，優先合併2025+2026年同節日資料），會優先採用該節日的歷史統計計算預估，否則維持原本的平假日/寒暑假邏輯。2027年以後的日期，或齋戒月等移動式節日超出目前建置範圍時，系統不會顯示提醒，僅套用原本邏輯，屆時請提醒我更新行事曆。<br>
-    <b>跨日班機（隔天凌晨）：</b>如果這次要一起預估的班機裡，有幾班其實是隔天凌晨（例如02:00前）才起飛，不需要切換發布日期分開處理——直接把這些班機一起加進同一批清單，並勾選它們的「隔天凌晨」核取方塊即可。勾選後，系統會用「發布日期+1天」重新計算該航班的星期別/旺季/節日/FAK/BT季節係數，其餘沒有勾選的航班則維持用「發布日期」本身計算；勾選的航班仍會跟其他航班一起存檔、一起匯出、一起顯示，不會被隱藏或分開。<br>
+    <b>跨日班機（隔天凌晨）：</b>如果這次要一起預估的班機裡，有幾班其實是隔天凌晨（例如02:00前）才起飛，不需要切換發布日期分開處理——直接把這些班機一起加進同一批清單，並勾選它們的「隔天凌晨」核取方塊即可。勾選後，系統會用「發布日期+1天」重新計算該航班的星期別/旺季/節日/FAK，其餘沒有勾選的航班則維持用「發布日期」本身計算；勾選的航班仍會跟其他航班一起存檔、一起匯出、一起顯示，不會被隱藏或分開。<br>
     <b>匯出：</b>「匯出打櫃計畫表」可產出類似公司現有格式的 Excel／PDF，方便發送給外站或台北站；如果需要用實際結果回頭校正這個工具背後的統計模型，請定期把公司系統的最新統計資料整理後提供給 Claude，由 Claude 重新計算並發布更新版的工具檔案。<br>
     <b>提醒：</b>本工具僅供打櫃前的參考估算，實際仍應依當日 Check-in 現場行李量、特殊團體行李、超大件/運動器材等情況調整。
     </div>
@@ -1892,18 +1892,6 @@ let exportOutstation = null; // {origin, hub}
 const CHINESE_FOOTER = '請遵守以下行李築打政策：\n1. BF/BP 可混打。BS(組員行李) 及 BW (豪經艙行李)請維持單打專櫃，不與其他行李混打。\n2. BT 請打專櫃，不可與其他行李混打。如 BT 裝載於散艙，請放於門口以利卸載。\n3. 無論電動輪椅是否有移除電池，可與其他物品放置散艙或專打一櫃，惟裝載於散艙不可將其他物品置於電動輪椅上，打櫃則不可與其他物品（CARGO/MAIL/BAG）混打同一櫃。';
 const ENGLISH_FOOTER = 'BAG Build Up Policy:\n1. BF/BP mix load, BS(Crew Bag) and BW (Premium Economy Class) MUST NOT mix load with other local baggages.\n2. BT MUST NOT mix load with other local (terminating) baggages in one ULD. If loaded in bulk, BT should be loaded at the door side to facilitate the unloading and connecting efficiency.\n3. Electronic Wheelchair MUST be loaded in one ULD and without any loose items (cargo/mail/baggage) or allowed to be loaded with other loose item in bulk without any item on top (it is still recommended to load the mobility aid in an independent section.), either the battery is removed or not.\n4. All the baggage relevant information should be noted on the BCM and CPM clearly.\n5. Within the same commodity, make sure the ULD is full before building up another ULD.';
 
-// US<->東南亞轉機行李，每櫃裝載量隨季節固定（依現場經驗規則，非統計推算）
-function getBtContainerFill(dateStr, transferFlag){
-  if(transferFlag !== 'us_arrival' && transferFlag !== 'sea_arrival' && transferFlag !== 'eu_arrival') return null;
-  if(!dateStr) return null;
-  const [y, m, d] = dateStr.split('-').map(Number);
-  // 聖誕到跨年高峰期：12/20 ~ 隔年1/2
-  const isXmasPeak = (m === 12 && d >= 20) || (m === 1 && d <= 2);
-  if(isXmasPeak) return 16.5; // 15~18件的中間值
-  const isWinter = (m >= 10 || m <= 2); // 冬季 10月~2月
-  return isWinter ? 20 : 21.5; // 冬季約20件；夏季(3-9月)約20~23件，取中間值
-}
-
 const BT_CAP = {AKE: 31, AKH: 25}; // 一個櫃子的容量：廣體(AKE) 31件、窄體(AKH) 25件（超過才需要獨立打專櫃）
 // 用「當天實際各轉出班號的轉機人數」（來自上傳檔案的BT-O/B拆分子欄位）換算成打櫃建議，比月平均(P31)更準，優先採用
 function getDailyBtLines(row){
@@ -1917,7 +1905,7 @@ function getDailyBtLines(row){
   Object.keys(row.onwardBtPax).forEach(onward => {
     const pax = row.onwardBtPax[onward];
     const bags = pax * bagsPerPax;
-    // 「JX」不分班號：不拆到特定轉出班號，交給轉機總人數 × 每人件數 ÷ 季節性每櫃件數的算法（同美加抵台航班原本做法）
+    // 「JX」不分班號：不拆到特定轉出班號，交給轉機總人數 × 每人件數 ÷ 航線平均每櫃件數的算法（REMARK 有列專櫃航班時改用 getRemarkBtLines）（同美加抵台航班原本做法）
     if(onward === 'JX'){
       // 同一班如果還有其他寫了班號的轉出欄位（東南亞抵台那種拆班號的格式），「JX 其他」就併入 BT-MIX 一起算；
       // 只有「JX 其他」一欄時（美國／歐洲抵台），交給轉機總人數的算法
@@ -1966,6 +1954,58 @@ function formatBtLines(lines){
     return '';
   }).filter(Boolean).join(' ');
 }
+// 美加／歐洲抵台航班：預報表 BT-O/B 只有「JX 其他」總人數（不分轉出班號），
+// 外站在 REMARK 只列出「要打專櫃的轉出航班」（例：BT-JX711*1、BT*JX800*1、BT*MIX*1），櫃數由系統判斷：
+//  1. 轉機行李總件數 = 轉機人數 × 該班號歷史每轉機旅客件數
+//  2. 各專櫃航班的件數 = 總件數 × 該航班目的地在這班抵台航班歷史轉出目的地中的占比（DATA.transfer_breakdown）；
+//     同一目的地被列了好幾班時平均分攤；歷史前五大目的地查不到的，暫用前五名中最小的占比估算（無資料時 5%）
+//  3. 每櫃件數一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；外站既然列為專櫃，至少 1 櫃
+//  4. 剩下的件數併入 BT-MIX：超過10件打櫃，10件以下散艙（同其他 BT-MIX 規則）
+// REMARK 裡寫的櫃數（*1）不採用，只拿來當專櫃航班清單
+function parseRemarkBtFlights(text){
+  if(!text) return null;
+  const re = /BT\s*[-*＊]\s*(?:JX\s*0*(\d{1,4})|(MIX))/gi;
+  const list = []; let m, hasMix = false;
+  while((m = re.exec(text)) !== null){
+    if(m[2]) hasMix = true;
+    else if(m[1] && !list.includes(m[1])) list.push(m[1]);
+  }
+  return (list.length || hasMix) ? {flights: list, hasMix} : null;
+}
+function getRemarkBtLines(row, calc){
+  if(!calc || !calc.isBtOutbound || !(calc.transferPax > 0)) return null;
+  const parsed = parseRemarkBtFlights(row.exportRemark);
+  if(!parsed || !parsed.flights.length) return null;
+  const fill = calc.containerFill || BT_CAP[getRowUldType(row)] || 31;
+  const totalBags = calc.transferBags;
+  if(!(totalBags > 0)) return null;
+  const bd = (DATA.transfer_breakdown && DATA.transfer_breakdown[row.flightNo]) || [];
+  const shareMap = {}; bd.forEach(([st, pct]) => { shareMap[st] = pct / 100; });
+  const minShare = bd.length ? Math.min(...bd.map(x => x[1])) / 100 : 0.05;
+  const destOf = fn => (flights[fn] && flights[fn].dest) || null;
+  const destCount = {};
+  parsed.flights.forEach(fn => { const d = destOf(fn); if(d) destCount[d] = (destCount[d] || 0) + 1; });
+  const lines = []; let used = 0;
+  parsed.flights.forEach(fn => {
+    const d = destOf(fn);
+    const known = d && shareMap[d] !== undefined;
+    const share = known ? shareMap[d] / destCount[d] : minShare;
+    const bags = Math.min(totalBags * share, Math.max(0, totalBags - used));
+    used += bags;
+    lines.push({type:'dedicated', onward: fn, dest: d, share_known: known, avg_bags: Math.round(bags*10)/10, containers: Math.max(1, Math.ceil(bags / fill))});
+  });
+  const rest = Math.max(0, totalBags - used);
+  if(rest > 10) lines.push({type:'mix_ctn', avg_bags: Math.round(rest*10)/10, containers: Math.ceil(rest / fill)});
+  else if(rest > 0) lines.push({type:'mix_bulk', avg_bags: Math.round(rest*10)/10});
+  return lines;
+}
+// 把 REMARK 裡 BT 專櫃那幾行換成系統判斷後的櫃數，其他文字原樣保留
+function remarkWithComputedBt(row, lines){
+  const text = row.exportRemark || '';
+  const kept = text.split(/\r?\n/).map(l => l.replace(/BT\s*[-*＊]\s*(?:JX\s*0*\d{1,4}|MIX)(?:\s*[*＊]\s*\d+)?(?:\s*BULK)?/gi, '').trim()).filter(Boolean);
+  const btText = lines.map(l => formatBtLines([l])).filter(Boolean);
+  return [...btText, ...kept].join('\n');
+}
 function countBtContainers(lines){
   let n = 0;
   lines.forEach(l => { if(l.type === 'dedicated') n += l.containers; else if(l.type === 'mix_ctn') n += (l.containers || 1); });
@@ -1995,9 +2035,11 @@ function computeExportRow(row){
   const fcBagsRaw = (withBf ? 0 : calc.cabinDetail.first.bags) + calc.cabinDetail.business.bags;
   const premiumBagsRaw = calc.cabinDetail.premium.bags;
   const economyBagsRaw = calc.cabinDetail.economy.bags;
-  const btFillOverride = getBtContainerFill(getEffectiveDate(row), row.transferFlag);
-  const btFill = btFillOverride || fill;
-  const dailyLines = getDailyBtLines(row);
+  const btFill = fill; // 轉機專櫃每櫃件數一律採航線歷史裝載資料（已取消季節規則）
+  const dailyLinesRaw = getDailyBtLines(row);
+  // REMARK 列出專櫃航班（美加／歐洲抵台只有總人數時）：依歷史轉出目的地比例分配，櫃數由系統判斷
+  const remarkLines = dailyLinesRaw ? null : getRemarkBtLines(row, calc);
+  const dailyLines = dailyLinesRaw || remarkLines;
   // 上傳檔案已提供當天轉機人數（trfKnown）時，一律以當天人數為準；P31 月平均只在沒有當天資料時（人工輸入等）才使用。
   // 否則像轉機人數是 0 的東南亞抵台航班，會被 P31 月平均算出好幾個 BT 櫃
   const useP31 = !row.trfKnown;
@@ -2042,7 +2084,7 @@ function computeExportRow(row){
     by = Math.min(by, Math.max(0, calc.cap - others));
   }
   const ttl = bf + bp + bw + by + bt + bs + crewCtn;
-  return {row, calc, bf, bp, bw, by, bt, bs, crewCtn, ttl, publishTarget, btFillUsed: btFill, btFillIsSeasonalRule: !!btFillOverride, btFromP31: !dailyLines && p31Bt !== null, btFromDaily: !!dailyLines};
+  return {row, calc, bf, bp, bw, by, bt, bs, crewCtn, ttl, publishTarget, btFillUsed: btFill, btLines: dailyLines, btFromRemark: !!remarkLines, btFromP31: !dailyLines && p31Bt !== null, btFromDaily: !!dailyLinesRaw};
 }
 
 function getExportRows(){
@@ -2149,12 +2191,12 @@ function renderExportPreview(){
     html += `<td>${fmtDash(er.bf)}</td><td>${fmtDash(er.bp)}</td>`;
     if(hasW) html += `<td>${fmtDash(er.bw)}</td>`;
     const btTitle = er.btFromDaily ? ` title="依上傳檔案裡當天實際各轉出班號的轉機人數換算，與REMARK建議一致"`
-      : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : (er.btFillIsSeasonalRule ? ` title="依季節規則：每櫃約${er.btFillUsed}件"` : ''));
-    const btBg = er.btFromDaily ? 'background:#d4f5dd;' : (er.btFromP31 ? 'background:#d7ecff;' : (er.btFillIsSeasonalRule ? 'background:#fff3cd;' : ''));
+      : (er.btFromRemark ? ` title="依REMARK列出的專櫃航班＋歷史轉出目的地比例分配，每櫃約${Math.round(er.btFillUsed*10)/10}件（航線歷史裝載資料）"` : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : ''));
+    const btBg = er.btFromDaily ? 'background:#d4f5dd;' : (er.btFromRemark ? 'background:#fff3cd;' : (er.btFromP31 ? 'background:#d7ecff;' : ''));
     html += `<td>${fmtDash(er.by)}</td><td${btTitle} style="${btBg}">${fmtDash(er.bt)}</td><td>${fmtDash(er.bs)}</td><td>${fmtDash(er.crewCtn)}</td>`;
     const ttlCellStyle = overCapacity ? ' style="background:#f8d7da; color:#842029; font-weight:700;" title="A321機型行李+FAK總櫃數上限10櫃，此班預估需要' + totalWithFak + '櫃"' : '';
     html += `<td${ttlCellStyle}>${er.ttl}</td><td>${fakCnt > 0 ? fakCnt : ''}</td>`;
-    html += `<td class="report-remark"><textarea class="remark-input" data-flight="${row.flightNo}" placeholder="${suggestedRemark(row).replace(/"/g,'&quot;')}" rows="1" style="width:100%; border:none; background:transparent; font-family:'Microsoft JhengHei', var(--sans); font-size:11.5px; color:#111; resize:none; overflow:hidden; white-space:pre-wrap; display:block;">${(row.exportRemark||'')}</textarea>`;
+    html += `<td class="report-remark"><textarea class="remark-input" data-flight="${row.flightNo}" placeholder="${suggestedRemark(row).replace(/"/g,'&quot;')}" rows="1" style="width:100%; border:none; background:transparent; font-family:'Microsoft JhengHei', var(--sans); font-size:11.5px; color:#111; resize:none; overflow:hidden; white-space:pre-wrap; display:block;">${(er.btFromRemark ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark||''))}</textarea>`;
     if(row.transferFlag && suggestedRemark(row)){
       html += `<button type="button" class="remark-insert-btn" data-flight="${row.flightNo}" data-text="${suggestedRemark(row).replace(/"/g,'&quot;')}" style="margin-left:4px; font-size:10px; padding:1px 5px; cursor:pointer;">帶入建議</button>`;
     }
@@ -2221,7 +2263,7 @@ function suggestedRemark(row){
     } else if(row.trfKnown && Number(row.transferPax) > 0){
       // 當天只知道轉機總人數（例如美國／歐洲抵台的「JX 其他」），不分轉出班號
       const er = computeExportRow(row);
-      if(er && er.bt > 0) parts.push(row.onwardBtPax && row.onwardBtPax.JX > 0 ? `BT *${er.bt} FOR TRF JX` : `BT *${er.bt}`);
+      if(er && er.bt > 0 && !er.btFromRemark) parts.push(row.onwardBtPax && row.onwardBtPax.JX > 0 ? `BT *${er.bt} FOR TRF JX` : `BT *${er.bt}`);
     }
   }
   return parts.join('；');
@@ -2274,7 +2316,7 @@ document.getElementById('downloadXlsxBtn').addEventListener('click', async () =>
     const {row, calc} = er;
     const dest = isOutstation ? (exportOutstation && exportOutstation.hub === 'BOTH' ? `${row.route.split('-')[0]} → ${row.route.split('-')[1]}` : row.route.split('-')[0]) : row.route.split('-')[1];
     const bagVals = hasW ? [er.bf,er.bp,er.bw,er.by,er.bt,er.bs,er.crewCtn] : [er.bf,er.bp,er.by,er.bt,er.bs,er.crewCtn];
-    const remarkVal = row.exportRemark || suggestedRemark(row);
+    const remarkVal = er.btFromRemark ? remarkWithComputedBt(row, er.btLines) : (row.exportRemark || suggestedRemark(row));
     const fakCnt = getFakCount(getEffectiveDate(row), row.flightNo);
     aoa.push([row.flightNo, dest, (routes[row.route]&&routes[row.route].櫃型)||'', ...bagVals, er.ttl, (fakCnt > 0 ? fakCnt : ''), remarkVal]);
   });
@@ -2565,7 +2607,28 @@ function decodeCsvBuffer(buf){
     try{ t = new TextDecoder('big5').decode(buf); }
     catch(e2){ t = new TextDecoder('utf-8').decode(buf); }
   }
-  return t.replace(/^\uFEFF/, '');
+  t = t.replace(/^\uFEFF/, '');
+  // CSV 裡有雙引號包住的儲存格（例如多行 REMARK：BT-JX711*1⏎BT-JX233*1），先依 CSV 規則拆欄，
+  // 再比照 Excel 的做法把格子裡的換行／逗號換成空格，避免一班被切成好幾行
+  if(t.indexOf('"') >= 0) t = excelAoaToPnlText(parseCsvQuoted(t));
+  return t;
+}
+function parseCsvQuoted(text){
+  const rows = []; let row = [], cell = '', q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){
+      if(c === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if(c === '"') q = true;
+    else if(c === ','){ row.push(cell); cell = ''; }
+    else if(c === '\n' || c === '\r'){
+      if(c === '\r' && text[i+1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += c;
+  }
+  if(cell !== '' || row.length){ row.push(cell); rows.push(row); }
+  return rows;
 }
 // ---- Excel 訂位人數檔：轉成與 CSV 相同的逐行文字後，交給同一套匯入流程 ----
 const XL_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
