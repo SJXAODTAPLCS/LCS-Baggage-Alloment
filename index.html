@@ -461,7 +461,7 @@
       <button class="secondary" id="printPdfBtn" type="button" data-tkey="btn_print_pdf">列印／另存 PDF</button>
     </div>
     <div class="transfer-note">
-      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位的每櫃裝載量一律採該航線歷史實際裝載資料（load data）的平均每櫃件數；抵台航班預報只有轉機總人數時，若在上傳檔案的 REMARK／轉機專櫃航班欄寫上轉出班號與人數，請寫成「轉出班號-人數」（例：32-9 / 26-8、BT-JX10-50、BT-JX711 22；可加 BT*JX785 bulk、BT*rest MIX ULD），系統依人數×歷史每人件數判斷哪些班要打專櫃及櫃數，沒寫到的人數自動併入 BT-MIX（畫面上以黃色網底標示）；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
+      <span data-tkey="note_export_disclaimer">「BF/BP/BW/BY/BS」為系統依歷史平均每櫃裝載量簡化估算的建議打櫃分配（標示為估算值），實際配載仍請由現場配載人員依機型/櫃位/艙單核對調整；「CREW」欄位直接採用②畫面填寫的組員行李櫃數，額外加總在總櫃數上，不參與其他艙等的緩衝分配；行李總櫃數依航線區域採用不同基準（加上組員行李櫃數）發布——日本/港澳/韓國線用「平均建議打櫃數」，東南亞線與美國/歐洲線用「保守打櫃數」（這些航線較容易被貨運搶用艙位，寧可多留），其餘未分類航線暫時預設用平均建議；②畫面「發布打櫃數」欄位可直接手動微調（±1按鈕或直接輸入），微調後的數字會直接被③匯出打櫃計畫表採用，取代系統自動計算的基準值，但無法低於各艙等實際需要的最低櫃數，微調只會影響經濟艙BY的緩衝量；「BT」欄位（專櫃與 BT-MIX）的每櫃件數改用該航線該櫃型的「滿櫃件數」：由歷史裝載資料估算（平均總件數 ÷（平均櫃數 − 0.5），即扣掉每班最後一個未滿的櫃子），要不要獨立打專櫃也以超過一個滿櫃為門檻；BF/BP/BW/BY 仍用平均每櫃件數；抵台航班預報只有轉機總人數時，若在上傳檔案的 REMARK／轉機專櫃航班欄寫上轉出班號與人數，請寫成「轉出班號-人數」（例：32-9 / 26-8、BT-JX10-50、BT-JX711 22；可加 BT*JX785 bulk、BT*rest MIX ULD），系統依人數×歷史每人件數判斷哪些班要打專櫃及櫃數，沒寫到的人數自動併入 BT-MIX（畫面上以黃色網底標示）；「EIC航材」欄位已依航材櫃(FAK)排班表自動標註，「Duty Agent」欄位會自動帶入②畫面填寫的值班人員姓名，「備註」欄位可直接在畫面上輸入，有轉機明細建議時可按「帶入建議」快速套用。</span>
     </div>
   </div>
 
@@ -1896,18 +1896,35 @@ let exportOutstation = null; // {origin, hub}
 const CHINESE_FOOTER = '請遵守以下行李築打政策：\n1. BF/BP 可混打。BS(組員行李) 及 BW (豪經艙行李)請維持單打專櫃，不與其他行李混打。\n2. BT 請打專櫃，不可與其他行李混打。如 BT 裝載於散艙，請放於門口以利卸載。\n3. 無論電動輪椅是否有移除電池，可與其他物品放置散艙或專打一櫃，惟裝載於散艙不可將其他物品置於電動輪椅上，打櫃則不可與其他物品（CARGO/MAIL/BAG）混打同一櫃。';
 const ENGLISH_FOOTER = 'BAG Build Up Policy:\n1. BF/BP mix load, BS(Crew Bag) and BW (Premium Economy Class) MUST NOT mix load with other local baggages.\n2. BT MUST NOT mix load with other local (terminating) baggages in one ULD. If loaded in bulk, BT should be loaded at the door side to facilitate the unloading and connecting efficiency.\n3. Electronic Wheelchair MUST be loaded in one ULD and without any loose items (cargo/mail/baggage) or allowed to be loaded with other loose item in bulk without any item on top (it is still recommended to load the mobility aid in an independent section.), either the battery is removed or not.\n4. All the baggage relevant information should be noted on the BCM and CPM clearly.\n5. Within the same commodity, make sure the ULD is full before building up another ULD.';
 
-const BT_CAP = {AKE: 31, AKH: 25}; // 一個櫃子的容量：廣體(AKE) 31件、窄體(AKH) 25件（超過才需要獨立打專櫃）
+const BT_CAP = {AKE: 31, AKH: 25}; // 舊的固定門檻，只在查不到航線資料時備用
+// 各航線「滿櫃件數」估算：歷史平均每櫃件數（總件數÷總櫃數）包含每班最後一個沒裝滿的櫃子，會低估滿櫃。
+// 假設最後一櫃平均只裝半櫃：滿櫃 ≈ 平均總件數 ÷（平均櫃數 − 0.5），再換算成這班櫃型（AKE／AKH）的係數套用。
+// 係數限制在 1.00～1.15 之間，避免樣本少的航線算出不合理的數字。BT 專櫃與 BT-MIX 的櫃數、要不要打專櫃的門檻都用這個數字。
+function getRouteFullFill(row, calc){
+  const c = calc || computeRow(row);
+  const avgFill = c && c.containerFill;
+  const r = routes[row.route];
+  const uld = getRowUldType(row) || AC_ULD[getRowAcType(row)];
+  if(!(avgFill > 0)) return BT_CAP[uld] || null;
+  let factor = 1;
+  if(r && r.avg_containers > 1.5 && r.avg_container_fill > 0 && r.avg_bags > 0){
+    factor = (r.avg_bags / (r.avg_containers - 0.5)) / r.avg_container_fill;
+  }
+  factor = Math.min(1.15, Math.max(1, factor));
+  return Math.round(avgFill * factor * 10) / 10;
+}
 // 用「當天實際各轉出班號的轉機人數」（來自上傳檔案的BT-O/B拆分子欄位）換算成打櫃建議，比月平均(P31)更準，優先採用
 function getDailyBtLines(row){
   if(!row.onwardBtPax) return null;
   const uld = getRowUldType(row) || AC_ULD[getRowAcType(row)];
-  const cap = BT_CAP[uld];
-  if(!cap) return null;
+  if(!BT_CAP[uld] && !routes[row.route]) return null;
   const info = flights[row.flightNo];
   const bagsPerPax = (info && info.transit_bags_per_pax) || 1.6; // 沒有專屬轉機比例時，用歷史經驗值代替
-  // 櫃數一律用航線歷史裝載資料的平均每櫃件數；cap（AKE 31／AKH 25）只用來判斷要不要獨立打專櫃
+  // 門檻與櫃數都用該航線該櫃型的「滿櫃件數」（getRouteFullFill）：超過一個滿櫃才獨立打專櫃
   const rc = computeRow(row);
-  const fillLd = (rc && rc.containerFill) || cap;
+  const cap = getRouteFullFill(row, rc);
+  if(!cap) return null;
+  const fillLd = cap;
   const lines = []; let smallSum = 0;
   Object.keys(row.onwardBtPax).forEach(onward => {
     const pax = row.onwardBtPax[onward];
@@ -1933,7 +1950,7 @@ function getDailyBtLines(row){
       if(!(totPax > 0)) return;
       const share = Math.min(1, pax / totPax);
       const yBags = (cd.economy.bags || 0) * share;
-      const fill = calc.containerFill || cap;
+      const fill = cap; // BT-OAL 專櫃也用滿櫃件數
       if(!(yBags > 0)) return;
       const line = {onward:'OAL', cabin:'economy', share: Math.round(share*1000)/1000, avg_bags: Math.round(yBags*10)/10};
       const oalCtn = ctnWithBulk(yBags, fill);
@@ -2047,7 +2064,7 @@ function computeExportRow(row){
   const fcBagsRaw = (withBf ? 0 : calc.cabinDetail.first.bags) + calc.cabinDetail.business.bags;
   const premiumBagsRaw = calc.cabinDetail.premium.bags;
   const economyBagsRaw = calc.cabinDetail.economy.bags;
-  const btFill = fill; // 轉機專櫃每櫃件數一律採航線歷史裝載資料（已取消季節規則）
+  const btFill = getRouteFullFill(row, calc) || fill; // 轉機專櫃／BT-MIX 每櫃件數：航線滿櫃件數（已取消季節規則）
   const dailyLinesRaw = getDailyBtLines(row);
   // REMARK 列出專櫃航班（美加／歐洲抵台只有總人數時）：依歷史轉出目的地比例分配，櫃數由系統判斷
   const remarkLines = dailyLinesRaw ? null : getRemarkBtLines(row, calc);
@@ -2203,7 +2220,7 @@ function renderExportPreview(){
     html += `<td>${fmtDash(er.bf)}</td><td>${fmtDash(er.bp)}</td>`;
     if(hasW) html += `<td>${fmtDash(er.bw)}</td>`;
     const btTitle = er.btFromDaily ? ` title="依上傳檔案裡當天實際各轉出班號的轉機人數換算，與REMARK建議一致"`
-      : (er.btFromRemark ? ` title="依REMARK寫的「轉出班號-人數」換算，其餘人數併入BT-MIX，每櫃約${Math.round(er.btFillUsed*10)/10}件（航線歷史裝載資料）"` : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : ''));
+      : (er.btFromRemark ? ` title="依REMARK寫的「轉出班號-人數」換算，其餘人數併入BT-MIX，滿櫃約${Math.round(er.btFillUsed*10)/10}件（航線歷史裝載資料估算）"` : (er.btFromP31 ? ` title="依P31 OnD轉機統計（每月更新）換算，與REMARK建議一致"` : ''));
     const btBg = er.btFromDaily ? 'background:#d4f5dd;' : (er.btFromRemark ? 'background:#fff3cd;' : (er.btFromP31 ? 'background:#d7ecff;' : ''));
     html += `<td>${fmtDash(er.by)}</td><td${btTitle} style="${btBg}">${fmtDash(er.bt)}</td><td>${fmtDash(er.bs)}</td><td>${fmtDash(er.crewCtn)}</td>`;
     const ttlCellStyle = overCapacity ? ' style="background:#f8d7da; color:#842029; font-weight:700;" title="A321機型行李+FAK總櫃數上限10櫃，此班預估需要' + totalWithFak + '櫃"' : '';
